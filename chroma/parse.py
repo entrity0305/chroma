@@ -1,5 +1,5 @@
-from statements import *
-from lex import *
+from .statements import *
+from .lex import *
 
 
 class Parser:

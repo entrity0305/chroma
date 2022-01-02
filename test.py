@@ -1,6 +1,5 @@
-from ast import parse
-from lex import *
-from parse import *
+from chroma.lex import *
+from chroma.parse import *
 
 code = '''
 function add2num(x, y)
