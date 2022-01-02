@@ -1,5 +1,9 @@
-from .statements import *
+from collections import namedtuple
 from .lex import *
+
+VarDefine = namedtuple('VarDefine', ('name', 'expr'), defaults=('', []))
+If = namedtuple('If', ('expr', 'body', 'else_body'), defaults=([], [], []))
+FunctionDefine = namedtuple('FunctionDefine', ('name', 'param', 'body'), defaults=('', [], []))
 
 
 class Parser:
@@ -209,7 +213,7 @@ class Parser:
                                 self.advance() #check for index ==> missing '}'
                             
                             body_parser = Parser(body)
-                            result.append(Function(name, param, body_parser.parse()))
+                            result.append(FunctionDefine(name, param, body_parser.parse()))
 
                         else:
                             pass #syntax error: missing '{'
