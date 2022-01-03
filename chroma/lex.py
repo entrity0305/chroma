@@ -78,6 +78,13 @@ class Lexer:
                 
                 result.append(Token('pow'))
             
+            elif self.current_char == '%':
+                if self.value != '':
+                    result.append(Token('value', self.value))
+                    self.value = ''
+                
+                result.append(Token('mod'))
+            
             elif self.current_char == ',':
                 if self.value != '':
                     result.append(Token('value', self.value))
@@ -176,6 +183,10 @@ class Lexer:
                 
                 elif self.value == 'elif':
                     result.append(Token('elif'))
+                    self.value = ''
+                
+                elif self.value == 'while':
+                    result.append(Token('while'))
                     self.value = ''
             
             else:
