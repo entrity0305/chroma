@@ -1,9 +1,23 @@
-from collections import namedtuple
+from dataclasses import dataclass
 from .lex import *
 
-VarDefine = namedtuple('VarDefine', ('name', 'expr'), defaults=('', []))
-If = namedtuple('If', ('expr', 'body', 'else_body'), defaults=([], [], []))
-FunctionDefine = namedtuple('FunctionDefine', ('name', 'param', 'body'), defaults=('', [], []))
+
+@dataclass
+class VarDefine:
+    name: Token
+    expr: list
+
+@dataclass
+class If:
+    expr: list
+    body: list
+    else_body: list
+
+@dataclass
+class FunctionDefine:
+    name: Token
+    param: list
+    body: list
 
 
 class Parser:
@@ -53,7 +67,7 @@ class Parser:
 
                     else:
                         if self.next_token().token_type == 'end_of_line': #when value is not initiallized
-                            result.append(VarDefine(name))
+                            result.append(VarDefine(name, []))
 
                         else:
                             pass #invalid syntax
@@ -88,7 +102,7 @@ class Parser:
                     self.advance() #check for index ==> missing '}'
                 
                 body_parser = Parser(body)
-                prev = If(expr, body_parser.parse())
+                prev = If(expr, body_parser.parse(), [])
 
                 main_if = prev
                 
@@ -121,7 +135,7 @@ class Parser:
                             self.advance() #check for index ==> missing '}'
                         
                         body_parser = Parser(body)
-                        new = If(expr, body_parser.parse())
+                        new = If(expr, body_parser.parse(), [])
 
                         prev.else_body = new
                         prev = new
@@ -178,7 +192,7 @@ class Parser:
                                     else:
                                         pass #syntax error: missing ','
                                 break
-                            
+
                             elif self.current_token.token_type == 'comma':
                                 if len(param_buffer) == 1:
                                     param.append(param_buffer[0])

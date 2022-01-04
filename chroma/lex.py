@@ -1,6 +1,10 @@
-from collections import namedtuple
+from dataclasses import dataclass
 
-Token = namedtuple('Token', ('token_type', 'value'), defaults=('', ''))
+
+@dataclass
+class Token:
+    token_type: str = ''
+    value: str = ''
 
 single_chars = {
     '+': 'add',

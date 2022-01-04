@@ -2,7 +2,16 @@ from chroma.lex import *
 from chroma.parse import *
 
 code = '''
-function add2(
+if x == 2 {
+
+} elif x == 3 {
+
+} elif x == 4 {
+
+} else {
+    var y;
+    var z = 5;
+}
 '''
 
 lex_test = Lexer(code)
