@@ -160,12 +160,14 @@ class Parser:
                     if self.next_token().token_type == 'invoke':
                         self.advance()
                         self.advance() #now '('
+                        self.advance() #check for index ==> invalid '('
 
                         param_buffer = []
                         param = []
 
                         while True:
-                            if self.current_token.token_type == 'rparen':
+                            print(param_buffer)
+                            if self.current_token.token_type == 'r_paren':
                                 if len(param_buffer) == 1:
                                     param.append(param_buffer[0])
                                     param_buffer = []
@@ -176,6 +178,7 @@ class Parser:
                                     else:
                                         pass #syntax error: missing ','
                                 break
+                            
                             elif self.current_token.token_type == 'comma':
                                 if len(param_buffer) == 1:
                                     param.append(param_buffer[0])
@@ -230,6 +233,9 @@ class Parser:
             else: break
         
         return result
+
+
+
 
 class Expression:
     def __init__(self):

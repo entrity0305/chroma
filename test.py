@@ -2,14 +2,7 @@ from chroma.lex import *
 from chroma.parse import *
 
 code = '''
-function add2num(x, y)
-{
-    function nested(p, q, r, k) {
-        var w = (p + q + r) * k;
-    }
-
-    var k = nested(1, 2, 3, 4) + 1;
-}
+function add2(
 '''
 
 lex_test = Lexer(code)

@@ -2,6 +2,49 @@ from collections import namedtuple
 
 Token = namedtuple('Token', ('token_type', 'value'), defaults=('', ''))
 
+single_chars = {
+    '+': 'add',
+    '-': 'sub',
+    '*': 'mul',
+    '/': 'div',
+    '^': 'pow',
+    '%': 'mod',
+    '>': 'greater',
+    '<': 'less',
+    '.': 'dot',
+    ',': 'comma',
+    '{': 'begin',
+    '}': 'end',
+    ')': 'r_paren',
+    ';': 'end_of_line',
+    '=': 'assign'
+}
+
+double_chars = {
+    '==': 'equal',
+    '>=': 'greater_equal',
+    '<=': 'less_equal',
+    '||': 'or',
+    '&&': 'and'
+}
+
+keywords = {
+    ' ': {
+        'var': 'var',
+        'function': 'function',
+        'return': 'return',
+        'if': 'if',
+        'elif': 'elif',
+        'while': 'while'
+    },
+    '{': {
+        'else': 'else'
+    },
+    ';': {
+        'break': 'break'
+    }
+}
+
 
 class Lexer:
     def __init__(self, code: str = ''):
@@ -35,159 +78,42 @@ class Lexer:
             elif self.current_char == '\n':
                 self.line_count += 1
                 self.line_pos = 0
-
-            elif self.current_char == ';':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                result.append(Token('end_of_line'))
-
-            elif self.current_char == '+':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                result.append(Token('add'))
-
-            elif self.current_char == '-':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                result.append(Token('sub'))
-            
-            elif self.current_char == '*':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                result.append(Token('mul'))
-            
-            elif self.current_char == '/':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                result.append(Token('div'))
-            
-            elif self.current_char == '^':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                result.append(Token('pow'))
-            
-            elif self.current_char == '%':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                result.append(Token('mod'))
-            
-            elif self.current_char == ',':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                result.append(Token('comma'))
-            
-            elif self.current_char == '.':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                result.append(Token('dot'))
-            
-            elif self.current_char == '<':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                if self.next_char() == '=':
-                    self.advance()
-                    result.append(Token('less_equal'))
-                
-                else:
-                    result.append(Token('less'))
-            
-            elif self.current_char == '>':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                if self.next_char() == '=':
-                    self.advance()
-                    result.append(Token('greater_equal'))
-                
-                else:
-                    result.append(Token('greater'))
-            
-            elif self.current_char == '=':
-                if self.value != '':
-                    result.append(Token('value', self.value))
-                    self.value = ''
-                
-                if self.next_char() == '=':
-                    self.advance()
-                    result.append(Token('equal'))
-                
-                else:
-                    result.append(Token('assign'))
             
             elif self.current_char == '(':
                 if self.value != '':
                     result.append(Token('value', self.value))
-                    self.value = ''
                     result.append(Token('invoke'))
-                
-                result.append(Token('lparen'))
-            
-            elif self.current_char == ')':
-                if self.value != '':
-                    result.append(Token('value', self.value))
                     self.value = ''
 
-                result.append(Token('rparen'))
-            
-            elif self.current_char == '{':
-                if self.value == 'else':
-                    result.append(Token('else'))
+                result.append(Token('l_paren'))
+
+            elif self.current_char in keywords:
+                if self.value in keywords[self.current_char]:
+                    result.append(Token(keywords[self.current_char][self.value]))
                     self.value = ''
+                
                 else:
                     if self.value != '':
                         result.append(Token('value', self.value))
                         self.value = ''
                 
-                result.append(Token('begin'))
+                if self.current_char in single_chars:
+                    result.append(Token(single_chars[self.current_char]))
             
-            elif self.current_char == '}':
+            elif self.current_char + self.next_char() in double_chars:
                 if self.value != '':
                     result.append(Token('value', self.value))
                     self.value = ''
                 
-                result.append(Token('end'))
-                                
-            elif self.current_char == ' ':
-                if self.value == 'var':
-                    result.append(Token('var'))
+                result.append(Token(double_chars[self.current_char + self.next_char()]))
+                self.advance()
+            
+            elif self.current_char in single_chars:
+                if self.value != '':
+                    result.append(Token('value', self.value))
                     self.value = ''
                 
-                elif self.value == 'function':
-                    result.append(Token('function'))
-                    self.value = ''
-                
-                elif self.value == 'if':
-                    result.append(Token('if'))
-                    self.value = ''
-                
-                elif self.value == 'elif':
-                    result.append(Token('elif'))
-                    self.value = ''
-                
-                elif self.value == 'while':
-                    result.append(Token('while'))
-                    self.value = ''
+                result.append(Token(single_chars[self.current_char]))
             
             else:
                 self.value += self.current_char
