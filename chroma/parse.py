@@ -49,7 +49,7 @@ class Parser:
         while self.current_pos < len(self.tokens):
             if self.current_token.token_type == 'var':
                 name = self.next_token()
-                if name.token_type == 'value':
+                if name.token_type == 'value': #check if name is valid
                     self.advance()
                     if self.next_token().token_type == 'assign':
                         self.advance() #now '='
@@ -180,8 +180,8 @@ class Parser:
                 result.append(main_if)
             
             elif self.current_token.token_type == 'function':
-                name = self.next_token()
-                if name.token_type == 'value':
+                name = self.next_token() 
+                if name.token_type == 'value': #check if name is valid
                     self.advance()
                     if self.next_token().token_type == 'invoke':
                         self.advance()

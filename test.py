@@ -5,7 +5,6 @@ code = '''
 if x == 2 {
 var x = 3 + 2 / 3;
 } 
-
 function f(x, y ,z) {
 }
 '''
