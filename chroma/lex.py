@@ -6,7 +6,7 @@ class Token:
     token_type: str = ''
     value: str = ''
 
-single_chars = {
+operators = {
     '+': 'add',
     '-': 'sub',
     '*': 'mul',
@@ -17,9 +17,12 @@ single_chars = {
     '<': 'less',
     '.': 'dot',
     ',': 'comma',
+    ')': 'r_paren'
+}
+
+single_chars = {
     '{': 'begin',
     '}': 'end',
-    ')': 'r_paren',
     ';': 'end_of_line',
     '=': 'assign'
 }
@@ -89,7 +92,7 @@ class Lexer:
                     result.append(Token('invoke'))
                     self.value = ''
 
-                result.append(Token('l_paren'))
+                result.append(Token('operator', 'l_paren'))
 
             elif self.current_char in keywords:
                 if self.value in keywords[self.current_char]:
@@ -118,6 +121,14 @@ class Lexer:
                     self.value = ''
                 
                 result.append(Token(single_chars[self.current_char]))
+            
+            elif self.current_char in operators:
+                if self.value != '':
+                    result.append(Token('value', self.value))
+                    self.value = ''
+                
+                result.append(Token('operator', operators[self.current_char]))
+
             
             else:
                 self.value += self.current_char

@@ -3,14 +3,10 @@ from chroma.parse import *
 
 code = '''
 if x == 2 {
+var x = 3 + 2 / 3;
+} 
 
-} elif x == 3 {
-
-} elif x == 4 {
-
-} else {
-    var y;
-    var z = 5;
+function f(x, y ,z) {
 }
 '''
 

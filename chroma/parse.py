@@ -87,14 +87,18 @@ class Parser:
                     self.advance() #check for index ==> missing '{'
                 #now '{'
                 body = []
-                opened = 1
+                opened = []
+                opened.append(self.current_token)
 
                 self.advance()
 
                 while True: #get body
-                    if self.current_token.token_type == 'begin': opened += 1
-                    if self.current_token.token_type == 'end': opened -= 1
-                    if opened == 0: 
+                    if self.current_token.token_type == 'begin':
+                        opened.append(self.current_token)
+                    if self.current_token.token_type == 'end':
+                        opened.pop()
+
+                    if len(opened) == 0: 
                         break
 
                     body.append(self.current_token)
@@ -120,14 +124,18 @@ class Parser:
                             self.advance() #check for index ==> missing '{'
                         
                         body = []
-                        opened = 1
+                        opened = []
+                        opened.append(self.current_token)
 
                         self.advance()
 
                         while True: #get body
-                            if self.current_token.token_type == 'begin': opened += 1
-                            if self.current_token.token_type == 'end': opened -= 1
-                            if opened == 0:
+                            if self.current_token.token_type == 'begin':
+                                opened.append(self.current_token)
+                            if self.current_token.token_type == 'end':
+                                opened.pop()
+
+                            if len(opened) == 0: 
                                 break
 
                             body.append(self.current_token)
@@ -145,14 +153,18 @@ class Parser:
                         self.advance() #check for index
 
                         body = []
-                        opened = 1
+                        opened = []
+                        opened.append(self.current_token)
 
                         self.advance()
 
                         while True: #get body
-                            if self.current_token.token_type == 'begin': opened += 1
-                            if self.current_token.token_type == 'end': opened -= 1
-                            if opened == 0:
+                            if self.current_token.token_type == 'begin':
+                                opened.append(self.current_token)
+                            if self.current_token.token_type == 'end':
+                                opened.pop()
+
+                            if len(opened) == 0: 
                                 break
 
                             body.append(self.current_token)
@@ -180,8 +192,7 @@ class Parser:
                         param = []
 
                         while True:
-                            print(param_buffer)
-                            if self.current_token.token_type == 'r_paren':
+                            if self.current_token.token_type == 'operator' and self.current_token.value == 'r_paren':
                                 if len(param_buffer) == 1:
                                     param.append(param_buffer[0])
                                     param_buffer = []
@@ -193,7 +204,7 @@ class Parser:
                                         pass #syntax error: missing ','
                                 break
 
-                            elif self.current_token.token_type == 'comma':
+                            elif self.current_token.token_type == 'operator' and self.current_token.value == 'comma':
                                 if len(param_buffer) == 1:
                                     param.append(param_buffer[0])
                                     param_buffer = []
@@ -215,14 +226,18 @@ class Parser:
                         if self.next_token().token_type == 'begin':
                             self.advance() #now '{'
                             body = []
-                            opened = 1
+                            opened = []
+                            opened.append(self.current_token)
 
                             self.advance()
 
                             while True: #get body
-                                if self.current_token.token_type == 'begin': opened += 1
-                                if self.current_token.token_type == 'end': opened -= 1
-                                if opened == 0: 
+                                if self.current_token.token_type == 'begin':
+                                    opened.append(self.current_token)
+                                if self.current_token.token_type == 'end':
+                                    opened.pop()
+
+                                if len(opened) == 0: 
                                     break
 
                                 body.append(self.current_token)
@@ -240,7 +255,13 @@ class Parser:
                 
                 else:
                     pass #invalid syntax
-
+            
+            else:
+                if self.current_token.token_type == 'value' or self.current_token.token_type == 'operator':
+                    buffer.append(self.current_token)
+                
+                else:
+                    pass #invalid syntax 
 
             
             if self.current_pos < len(self.tokens) - 1: self.advance()
