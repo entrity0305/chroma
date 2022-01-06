@@ -14,10 +14,18 @@ class If:
     else_body: list
 
 @dataclass
+class Break:
+    pass
+
+@dataclass
 class FunctionDefine:
     name: Token
     param: list
     body: list
+
+@dataclass
+class Return:
+    expr: list
 
 
 class Parser:
@@ -179,6 +187,10 @@ class Parser:
                 
                 result.append(main_if)
             
+            elif self.current_token.token_type == 'break':
+                self.advance()
+                result.append(Break())
+            
             elif self.current_token.token_type == 'function':
                 name = self.next_token() 
                 if name.token_type == 'value': #check if name is valid
@@ -255,6 +267,19 @@ class Parser:
                 
                 else:
                     pass #invalid syntax
+            
+            elif self.current_token.token_type == 'return':
+                self.advance() #check for index
+
+                expr = []
+
+                while True:
+                    if self.current_token.token_type == 'end_of_line': break
+                    expr.append(self.current_token)
+
+                    self.advance() #check for index ==> missing ';'
+                
+                result.append(Return(expr))
             
             else:
                 if self.current_token.token_type == 'value' or self.current_token.token_type == 'operator':

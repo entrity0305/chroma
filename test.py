@@ -2,10 +2,10 @@ from chroma.lex import *
 from chroma.parse import *
 
 code = '''
-if x == 2 {
-var x = 3 + 2 / 3;
-} 
-function f(x, y ,z) {
+function f(x, y, z) {
+    var w = (x * z);
+
+    return w + y / x;
 }
 '''
 
