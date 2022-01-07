@@ -2,11 +2,23 @@ from chroma.lex import *
 from chroma.parse import *
 
 code = '''
-function f(x, y, z) {
-    var w = (x * z);
+var k = 0;
+var N = 100;
 
-    return w + y / x;
+while k < N {
+    println(k);
+    var k = k + 1;
 }
+
+println(0);
+
+
+function add2(x, y) {
+    return x + y;
+}
+
+
+println(add2(1, 4));
 '''
 
 lex_test = Lexer(code)

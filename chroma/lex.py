@@ -89,7 +89,7 @@ class Lexer:
             elif self.current_char == '(':
                 if self.value != '':
                     result.append(Token('value', self.value))
-                    result.append(Token('invoke'))
+                    result.append(Token('operator', 'invoke'))
                     self.value = ''
 
                 result.append(Token('operator', 'l_paren'))

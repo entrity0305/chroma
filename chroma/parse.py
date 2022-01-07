@@ -14,6 +14,11 @@ class If:
     else_body: list
 
 @dataclass
+class While:
+    expr: list
+    body: list
+
+@dataclass
 class Break:
     pass
 
@@ -25,6 +30,10 @@ class FunctionDefine:
 
 @dataclass
 class Return:
+    expr: list
+
+@dataclass
+class Expr:
     expr: list
 
 
@@ -187,6 +196,39 @@ class Parser:
                 
                 result.append(main_if)
             
+            elif self.current_token.token_type == 'while':
+                self.advance() #check for index
+
+                expr = []
+
+                while True: #get expr
+                    if self.current_token.token_type == 'begin': break
+                    expr.append(self.current_token)
+
+                    self.advance() #check for index ==> missing '{'
+                #now '{'
+                body = []
+                opened = []
+                opened.append(self.current_token)
+
+                self.advance()
+
+                while True: #get body
+                    if self.current_token.token_type == 'begin':
+                        opened.append(self.current_token)
+                    if self.current_token.token_type == 'end':
+                        opened.pop()
+
+                    if len(opened) == 0: 
+                        break
+
+                    body.append(self.current_token)
+
+                    self.advance() #check for index ==> missing '}'
+                
+                body_parser = Parser(body)
+                result.append(While(expr, body_parser.parse()))
+            
             elif self.current_token.token_type == 'break':
                 self.advance()
                 result.append(Break())
@@ -282,7 +324,15 @@ class Parser:
                 result.append(Return(expr))
             
             else:
-                if self.current_token.token_type == 'value' or self.current_token.token_type == 'operator':
+                if self.current_token.token_type == 'end_of_line':
+                    if len(buffer) != 0:
+                        result.append(Expr(buffer))
+                        buffer = []
+                    
+                    else:
+                        pass #syntax error: invalid ';'
+
+                elif self.current_token.token_type == 'value' or self.current_token.token_type == 'operator':
                     buffer.append(self.current_token)
                 
                 else:
@@ -292,8 +342,11 @@ class Parser:
             if self.current_pos < len(self.tokens) - 1: self.advance()
             else: break
         
+        if len(buffer) != 0:
+            pass #syntax error: missing ';'
+        
         return result
-
+        
 
 
 
