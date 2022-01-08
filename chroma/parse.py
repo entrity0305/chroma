@@ -2,6 +2,11 @@ from dataclasses import dataclass
 from .lex import *
 
 
+class InvalidSyntax(Exception):
+    def __init__(self, message: str = '', lines: list = [], line_count: int = 0):
+        super().__init__(f'At line {line_count+1},\n{lines[line_count]}\nInvalid Syntax: {message}')
+
+
 @dataclass
 class VarDefine:
     name: Token
@@ -43,7 +48,7 @@ class Expr:
 
 
 class Parser:
-    def __init__(self, tokens: list = []):
+    def __init__(self, tokens: list = [], lines: list = []):
         self.current_pos = 0
         if tokens != []:
             self.current_token = tokens[0]
@@ -52,6 +57,7 @@ class Parser:
             self.current_token = Token('none')
 
         self.tokens = tokens
+        self.lines = lines
     
     def advance(self):
         self.current_pos += 1
@@ -75,7 +81,12 @@ class Parser:
                     self.advance()
                     if self.next_token().token_type == 'assign':
                         self.advance() #now '='
-                        self.advance() #check for index
+
+                        try:
+                            self.advance()
+                        
+                        except IndexError:
+                            raise InvalidSyntax('\'=\'', self.lines, self.current_token.line_count)
 
                         expr = []
 
@@ -83,7 +94,11 @@ class Parser:
                             if self.current_token.token_type == 'end_of_line': break
                             expr.append(self.current_token)
 
-                            self.advance() #check for index ==> missing ';'
+                            try:
+                                self.advance()
+                            
+                            except IndexError:
+                                raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
                         
                         result.append(VarDefine(name, expr))
 
@@ -92,14 +107,18 @@ class Parser:
                             result.append(VarDefine(name, []))
 
                         else:
-                            pass #invalid syntax
+                            InvalidSyntax(f'\'{self.next_token().value}\'', self.lines, self.next_token().line_count)
 
                 else:
-                    pass #invalid syntax
+                    raise InvalidSyntax(f'\'{name.value}\'', self.lines, name.line_count)
             
             elif self.current_token.token_type == 'assign':
                 if len(buffer) != 0:
-                    self.advance() #check for index
+                    try:
+                        self.advance()
+                        
+                    except IndexError:
+                        raise InvalidSyntax('\'=\'', self.lines, self.current_token.line_count)
 
                     expr = []
 
@@ -107,13 +126,17 @@ class Parser:
                         if self.current_token.token_type == 'end_of_line': break
                         expr.append(self.current_token)
 
-                        self.advance() #check for index ==> missing ';'
+                        try:
+                            self.advance()
+                            
+                        except IndexError:
+                            raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
                     
                     result.append(Assign(buffer, expr))
                     buffer = []
 
                 else:
-                    pass #invalid syntax: invalid '='
+                    raise InvalidSyntax('\'=\'', self.lines, self.current_token.line_count)
             
             elif self.current_token.token_type == 'if':
                 self.advance() #check for index
