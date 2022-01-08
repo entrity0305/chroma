@@ -8,6 +8,11 @@ class VarDefine:
     expr: list
 
 @dataclass
+class Assign:
+    name: list
+    expr: list
+
+@dataclass
 class If:
     expr: list
     body: list
@@ -91,6 +96,24 @@ class Parser:
 
                 else:
                     pass #invalid syntax
+            
+            elif self.current_token.token_type == 'assign':
+                if len(buffer) != 0:
+                    self.advance() #check for index
+
+                    expr = []
+
+                    while True:
+                        if self.current_token.token_type == 'end_of_line': break
+                        expr.append(self.current_token)
+
+                        self.advance() #check for index ==> missing ';'
+                    
+                    result.append(Assign(buffer, expr))
+                    buffer = []
+
+                else:
+                    pass #invalid syntax: invalid '='
             
             elif self.current_token.token_type == 'if':
                 self.advance() #check for index

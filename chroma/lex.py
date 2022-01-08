@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class Token:
     token_type: str = ''
     value: str = ''
+    
 
 operators = {
     '+': 'add',
