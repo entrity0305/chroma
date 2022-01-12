@@ -50,7 +50,7 @@ class Expr:
 class Parser:
     def __init__(self, tokens: list = [], lines: list = []):
         self.current_pos = 0
-        if tokens != []:
+        if len(tokens) != 0:
             self.current_token = tokens[0]
         
         else:
@@ -99,8 +99,7 @@ class Parser:
                             
                             except IndexError:
                                 raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
-                        
-                        result.append(VarDefine(name, expr))
+                        result.append(VarDefine(name, Expression(expr).parse()))
 
                     else:
                         if self.next_token().token_type == 'end_of_line': #when value is not initiallized
@@ -132,7 +131,7 @@ class Parser:
                         except IndexError:
                             raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
                     
-                    result.append(Assign(buffer, expr))
+                    result.append(Assign(buffer, Expression(expr).parse()))
                     buffer = []
 
                 else:
@@ -169,7 +168,7 @@ class Parser:
                     self.advance() #check for index ==> missing '}'
                 
                 body_parser = Parser(body)
-                prev = If(expr, body_parser.parse(), [])
+                prev = If(Expression(expr).parse(), body_parser.parse(), [])
 
                 main_if = prev
                 
@@ -206,7 +205,7 @@ class Parser:
                             self.advance() #check for index ==> missing '}'
                         
                         body_parser = Parser(body)
-                        new = If(expr, body_parser.parse(), [])
+                        new = If(Expression(expr).parse(), body_parser.parse(), [])
 
                         prev.else_body = new
                         prev = new
@@ -273,7 +272,7 @@ class Parser:
                     self.advance() #check for index ==> missing '}'
                 
                 body_parser = Parser(body)
-                result.append(While(expr, body_parser.parse()))
+                result.append(While(Expression(expr).parse(), body_parser.parse()))
             
             elif self.current_token.token_type == 'break':
                 self.advance()
@@ -283,7 +282,7 @@ class Parser:
                 name = self.next_token() 
                 if name.token_type == 'value': #check if name is valid
                     self.advance()
-                    if self.next_token().token_type == 'invoke':
+                    if self.next_token().token_type == 'operator' and self.next_token().value == 'invoke':
                         self.advance()
                         self.advance() #now '('
                         self.advance() #check for index ==> invalid '('
@@ -322,7 +321,7 @@ class Parser:
                                 pass #invalid syntax
 
                             self.advance() #check for index ==> missing ')'
-                    
+
                         if self.next_token().token_type == 'begin':
                             self.advance() #now '{'
                             body = []
@@ -341,7 +340,6 @@ class Parser:
                                     break
 
                                 body.append(self.current_token)
-
                                 self.advance() #check for index ==> missing '}'
                             
                             body_parser = Parser(body)
@@ -367,12 +365,12 @@ class Parser:
 
                     self.advance() #check for index ==> missing ';'
                 
-                result.append(Return(expr))
+                result.append(Return(Expression(expr).parse()))
             
             else:
                 if self.current_token.token_type == 'end_of_line':
                     if len(buffer) != 0:
-                        result.append(Expr(buffer))
+                        result.append(Expr(Expression(buffer).parse()))
                         buffer = []
                     
                     else:
@@ -394,10 +392,142 @@ class Parser:
         return result
         
 
+class BinaryOperation:
+    def __init__(self, left, operator, right):
+        self.left = left
+        self.operator = operator
+        self.right = right
+    
+    def __repr__(self):
+        return f'({self.left} {self.operator} {self.right})'
+
+@dataclass
+class ValueNode:
+    value: str
+
+class NegativeValueNode:
+    def __init__(self, value):
+        self.value = value
+    
+    def __repr__(self):
+        return f'-({self.value})'
 
 
 class Expression:
-    def __init__(self):
-        pass
+    def __init__(self, tokens: list):
+        self.current_token = None
+        self.tokens = iter(tokens)
+
+        self.advance()
+
+        self.opened = []
+    
+    def advance(self):
+        try:
+            self.current_token = next(self.tokens)
+        
+        except StopIteration:
+            self.current_token = None
+    
+    def parse(self):
+        if self.current_token == None:
+            return None
+        
+        result = self.array_operators()
+
+        if self.current_token != None:
+            pass #invalid syntax
+        
+        return result
+    
+    def array_operators(self):
+        result = self.logical_operators()
+
+        while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value == 'comma':
+            self.advance()
+            result = BinaryOperation(result, 'array', self.logical_operators())
+        
+        return result
+    
+    def logical_operators(self):
+        result = self.low_binary_operators()
+
+        while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value in ('equal', 'not_equal', 'greater_equal', 'less_equal', 'or', 'and'):
+            op_type = self.current_token.value
+            self.advance()
+            result = BinaryOperation(result, op_type, self.low_binary_operators())
+        
+        return result
+    
+    def low_binary_operators(self):
+        result = self.high_binary_operators()
+        
+        while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value in ('add', 'sub'):
+            op_type = self.current_token.value
+            self.advance()
+            result = BinaryOperation(result, op_type, self.high_binary_operators())
+        
+        return result
+    
+    def high_binary_operators(self):
+        result = self.powered_operators()
+
+        while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value in ('mul', 'div'):
+            op_type = self.current_token.value
+            self.advance()
+            result = BinaryOperation(result, op_type, self.powered_operators())
+        
+        return result
+    
+    def powered_operators(self):
+        result = self.invoke_operators()
+
+        while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value == 'pow':
+            self.advance()
+            result = BinaryOperation(result, 'pow', self.invoke_operators())
+        
+        return result
+    
+    def invoke_operators(self):
+        result = self.factor()
+
+        while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value == 'invoke':
+            self.advance()
+            result = BinaryOperation(result, 'invoke', self.factor())
+        
+        return result
+    
+    def factor(self):
+        current_token = self.current_token
+
+        if current_token.token_type == 'operator':
+            if current_token.value == 'l_paren':
+                self.opened.append(current_token)
+                self.advance()
+                result = self.array_operators()
+
+                if self.current_token != 'r_paren':
+                    pass #unclosed '('
+
+                self.advance()
+                
+                return result
+            
+            elif current_token.value == 'add':
+                self.advance()
+
+                return self.array_operators()
+            
+            elif current_token.value == 'sub':
+                self.advance()
+
+                return NegativeValueNode(self.array_operators())
+        
+        elif current_token.token_type == 'value':
+            self.advance()
+
+            return ValueNode(current_token.value)
+        
+
 
 

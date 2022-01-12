@@ -31,6 +31,7 @@ single_chars = {
 
 double_chars = {
     '==': 'equal',
+    '!=': 'not_equal',
     '>=': 'greater_equal',
     '<=': 'less_equal',
     '||': 'or',
@@ -116,7 +117,7 @@ class Lexer:
                     result.append(Token('value', self.value, line_count=self.line_count))
                     self.value = ''
                 
-                result.append(Token(double_chars[self.current_char + self.next_char()], self.current_char + self.next_char(), line_count=self.line_count))
+                result.append(Token('operator', double_chars[self.current_char + self.next_char()], line_count=self.line_count))
                 self.advance()
             
             elif self.current_char in single_chars:

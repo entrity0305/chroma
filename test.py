@@ -2,9 +2,36 @@ from chroma.lex import *
 from chroma.parse import *
 
 code = '''
-var x = 5 + 4;
 
-x = 2 + 3;
+function checkNum(N) {
+    if N == 1 {
+        return 1;
+    } elif N == 2 {
+        return 2;
+    } 
+    else
+    {
+        return 3;
+    }
+
+}
+
+function add2Num(x, y) {
+    return x + y;
+}
+
+
+
+var a_number = add2Num(add2Num(1, 2), 5) / 6;
+
+var pi = 3.14;
+
+var area = pi * 4^2;
+
+a_number = 5;
+
+checkNum(4 ^ 8);
+
 '''
 
 lex_test = Lexer(code)
