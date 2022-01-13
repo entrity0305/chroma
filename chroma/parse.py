@@ -11,40 +11,47 @@ class InvalidSyntax(Exception):
 class VarDefine:
     name: Token
     expr: list
+    statement_type = 'VarDefine'
 
 @dataclass
 class Assign:
     name: list
     expr: list
+    statement_type = 'Assign'
 
 @dataclass
 class If:
     expr: list
     body: list
     else_body: list
+    statement_type = 'If'
 
 @dataclass
 class While:
     expr: list
     body: list
+    statement_type = 'While'
 
 @dataclass
 class Break:
-    pass
+    statement_type = 'Break'
 
 @dataclass
 class FunctionDefine:
     name: Token
     param: list
     body: list
+    statement_type = 'Function'
 
 @dataclass
 class Return:
     expr: list
+    statement_type = 'Return'
 
 @dataclass
 class Expr:
     expr: list
+    statement_type = 'Expr'
 
 
 class Parser:
@@ -384,13 +391,13 @@ class Parser:
                         buffer = []
                     
                     else:
-                        pass #syntax error: invalid ';'
+                        raise InvalidSyntax('\';\'', self.lines, self.current_token.line_count)
 
                 elif self.current_token.token_type == 'value' or self.current_token.token_type == 'operator':
                     buffer.append(self.current_token)
                 
                 else:
-                    pass #invalid syntax 
+                    raise InvalidSyntax(f'\'{self.current_token.value}\'', self.lines, self.current_token.line_count)
 
             
             if self.current_pos < len(self.tokens) - 1: self.advance()

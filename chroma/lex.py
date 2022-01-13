@@ -59,11 +59,12 @@ keywords = {
 class Lexer:
     def __init__(self, code: str = ''):
         self.current_pos = 0
+        code += '\n'
         self.current_char = code[0]
 
         self.value = ''
 
-        self.code = code + '\n'
+        self.code = code
 
         self.line_count = 0
     
