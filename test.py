@@ -32,6 +32,8 @@ a_number = 5;
 
 checkNum(4 ^ 8);
 
+var z = 1 == 5 && 4 != 2;
+
 '''
 
 lex_test = Lexer(code)

@@ -99,7 +99,12 @@ class Parser:
                             
                             except IndexError:
                                 raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
-                        result.append(VarDefine(name, Expression(expr).parse()))
+                        
+                        if len(expr) != 0:
+                            result.append(VarDefine(name, Expression(expr).parse()))
+                        
+                        else:
+                            raise InvalidSyntax('\'=\'', self.lines, self.current_token.line_count)
 
                     else:
                         if self.next_token().token_type == 'end_of_line': #when value is not initiallized
@@ -131,7 +136,12 @@ class Parser:
                         except IndexError:
                             raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
                     
-                    result.append(Assign(buffer, Expression(expr).parse()))
+                    if len(expr) != 0: 
+                        result.append(Assign(buffer, Expression(expr).parse()))
+                        
+                    else: 
+                        raise InvalidSyntax('\'=\'', self.lines, self.current_token.line_count)
+
                     buffer = []
 
                 else:
