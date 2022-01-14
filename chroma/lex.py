@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class Token:
     token_type: str = ''
     value: str = ''
+    original: str = ''
     line_count: int = 0
     
 
@@ -98,11 +99,11 @@ class Lexer:
                     result.append(Token('operator', 'invoke', line_count=self.line_count))
                     self.value = ''
 
-                result.append(Token('operator', 'l_paren', line_count=self.line_count))
+                result.append(Token('operator', 'l_paren', '(', line_count=self.line_count))
 
             elif self.current_char in keywords:
                 if self.value in keywords[self.current_char]:
-                    result.append(Token(keywords[self.current_char][self.value], self.value, line_count=self.line_count))
+                    result.append(Token(keywords[self.current_char][self.value], self.value, self.value, line_count=self.line_count))
                     self.value = ''
                 
                 else:
@@ -111,14 +112,14 @@ class Lexer:
                         self.value = ''
                 
                 if self.current_char in single_chars:
-                    result.append(Token(single_chars[self.current_char], line_count=self.line_count))
+                    result.append(Token(single_chars[self.current_char], self.current_char, self.current_char, line_count=self.line_count))
             
             elif self.current_char + self.next_char() in double_chars:
                 if self.value != '':
                     result.append(Token('value', self.value, line_count=self.line_count))
                     self.value = ''
                 
-                result.append(Token('operator', double_chars[self.current_char + self.next_char()], line_count=self.line_count))
+                result.append(Token('operator', double_chars[self.current_char + self.next_char()], self.current_char + self.next_char(), line_count=self.line_count))
                 self.advance()
             
             elif self.current_char in single_chars:
@@ -126,14 +127,14 @@ class Lexer:
                     result.append(Token('value', self.value, line_count=self.line_count))
                     self.value = ''
                 
-                result.append(Token(single_chars[self.current_char], self.current_char, line_count=self.line_count))
+                result.append(Token(single_chars[self.current_char], self.current_char, self.current_char, line_count=self.line_count))
             
             elif self.current_char in operators:
                 if self.value != '':
                     result.append(Token('value', self.value, line_count=self.line_count))
                     self.value = ''
                 
-                result.append(Token('operator', operators[self.current_char], line_count=self.line_count))
+                result.append(Token('operator', operators[self.current_char], self.current_char, line_count=self.line_count))
 
             
             else:

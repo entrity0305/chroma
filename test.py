@@ -3,12 +3,15 @@ from chroma.parse import *
 from chroma.compile import *
 
 code = '''
-function f(x, y) {
-    function nested()
+if a == 1 
+{
+    if a == 2
     {
-        
     }
 }
+
+
+function f(x, y, z) { return x + y + z; }
 '''
 
 lex_test = Lexer(code)

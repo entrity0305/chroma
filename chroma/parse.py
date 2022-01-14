@@ -1,3 +1,4 @@
+from ast import Index
 from dataclasses import dataclass
 from .lex import *
 
@@ -118,10 +119,10 @@ class Parser:
                             result.append(VarDefine(name, []))
 
                         else:
-                            InvalidSyntax(f'\'{self.next_token().value}\'', self.lines, self.next_token().line_count)
+                            InvalidSyntax(f'\'{self.next_token().original}\'', self.lines, self.next_token().line_count)
 
                 else:
-                    raise InvalidSyntax(f'\'{name.value}\'', self.lines, name.line_count)
+                    raise InvalidSyntax(f'\'{name.original}\'', self.lines, name.line_count)
             
             elif self.current_token.token_type == 'assign':
                 if len(buffer) != 0:
@@ -155,21 +156,32 @@ class Parser:
                     raise InvalidSyntax('\'=\'', self.lines, self.current_token.line_count)
             
             elif self.current_token.token_type == 'if':
-                self.advance() #check for index
+                try:
+                    self.advance()
+                
+                except IndexError:
+                    raise InvalidSyntax('\'if\'', self.lines, self.current_token.line_count)
 
                 expr = []
 
                 while True: #get expr
                     if self.current_token.token_type == 'begin': break
                     expr.append(self.current_token)
-
-                    self.advance() #check for index ==> missing '{'
-                #now '{'
+                    try:
+                        self.advance() 
+                    
+                    except IndexError:
+                        raise InvalidSyntax('Missing \'{\'', self.lines, self.current_token.line_count)
+                
                 body = []
                 opened = []
                 opened.append(self.current_token)
 
-                self.advance()
+                try:
+                    self.advance()
+
+                except IndexError:
+                    raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
 
                 while True: #get body
                     if self.current_token.token_type == 'begin':
@@ -181,8 +193,11 @@ class Parser:
                         break
 
                     body.append(self.current_token)
-
-                    self.advance() #check for index ==> missing '}'
+                    try:
+                        self.advance() 
+                    
+                    except IndexError:
+                        raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                 
                 body_parser = Parser(body)
                 prev = If(Expression(expr).parse(), body_parser.parse(), [])
@@ -192,7 +207,11 @@ class Parser:
                 while self.next_token().token_type == 'elif' or self.next_token().token_type == 'else':
                     if self.next_token().token_type == 'elif':
                         self.advance() #check for index
-                        self.advance() #check for index
+                        try:
+                            self.advance()
+                        
+                        except IndexError:
+                            raise InvalidSyntax('\'elif\'', self.lines, self.current_token.line_count)
 
                         expr = []
 
@@ -200,13 +219,21 @@ class Parser:
                             if self.current_token.token_type == 'begin': break
                             expr.append(self.current_token)
 
-                            self.advance() #check for index ==> missing '{'
+                            try:
+                                self.advance()
+                            
+                            except IndexError:
+                                raise InvalidSyntax('Missing \'{\'', self.lines, self.current_token.line_count)
                         
                         body = []
                         opened = []
                         opened.append(self.current_token)
 
-                        self.advance()
+                        try:
+                            self.advance()
+
+                        except IndexError:
+                            raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
 
                         while True: #get body
                             if self.current_token.token_type == 'begin':
@@ -219,7 +246,11 @@ class Parser:
 
                             body.append(self.current_token)
 
-                            self.advance() #check for index ==> missing '}'
+                            try:
+                                self.advance()
+                            
+                            except IndexError:
+                                raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                         
                         body_parser = Parser(body)
                         new = If(Expression(expr).parse(), body_parser.parse(), [])
@@ -235,7 +266,11 @@ class Parser:
                         opened = []
                         opened.append(self.current_token)
 
-                        self.advance()
+                        try:
+                            self.advance()
+
+                        except IndexError:
+                            raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
 
                         while True: #get body
                             if self.current_token.token_type == 'begin':
@@ -248,7 +283,11 @@ class Parser:
 
                             body.append(self.current_token)
 
-                            self.advance() #check for index ==> missing '}'
+                            try:
+                                self.advance()
+                            
+                            except IndexError:
+                                raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                         
                         body_parser = Parser(body)
                         new = body_parser.parse()
@@ -259,7 +298,11 @@ class Parser:
                 result.append(main_if)
             
             elif self.current_token.token_type == 'while':
-                self.advance() #check for index
+                try:
+                    self.advance()
+
+                except IndexError:
+                    raise InvalidSyntax('\'while\'', self.lines, self.current_token.token_type)
 
                 expr = []
 
@@ -267,7 +310,12 @@ class Parser:
                     if self.current_token.token_type == 'begin': break
                     expr.append(self.current_token)
 
-                    self.advance() #check for index ==> missing '{'
+                    try:
+                        self.advance()
+                    
+                    except IndexError:
+                        raise InvalidSyntax('Missing \'{\'', self.lines, self.current_token.token_type)
+                    
                 #now '{'
                 body = []
                 opened = []
@@ -286,7 +334,11 @@ class Parser:
 
                     body.append(self.current_token)
 
-                    self.advance() #check for index ==> missing '}'
+                    try:
+                        self.advance()
+                    
+                    except IndexError:
+                        raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                 
                 body_parser = Parser(body)
                 result.append(While(Expression(expr).parse(), body_parser.parse()))
@@ -302,7 +354,11 @@ class Parser:
                     if self.next_token().token_type == 'operator' and self.next_token().value == 'invoke':
                         self.advance()
                         self.advance() #now '('
-                        self.advance() #check for index ==> invalid '('
+                        try:
+                            self.advance()
+                        
+                        except IndexError:
+                            raise InvalidSyntax('\'(\'', self.lines, self.current_token.line_count)
 
                         param_buffer = []
                         param = []
@@ -315,9 +371,9 @@ class Parser:
                                 
                                 else:
                                     if len(param_buffer) == 0:
-                                        pass #syntax error: invalid ','
+                                        raise InvalidSyntax('\',\'', self.lines, self.current_token.line_count)
                                     else:
-                                        pass #syntax error: missing ','
+                                        raise InvalidSyntax('Missing \',\'', self.lines, self.current_token.line_count)
                                 break
 
                             elif self.current_token.token_type == 'operator' and self.current_token.value == 'comma':
@@ -327,17 +383,21 @@ class Parser:
                                 
                                 else:
                                     if len(param_buffer) == 0:
-                                        pass #syntax error: invalid ','
+                                        raise InvalidSyntax('\',\'', self.lines, self.current_token.line_count)
                                     else:
-                                        pass #syntax error: missing ','
+                                        raise InvalidSyntax('Missing \',\'', self.lines, self.current_token.line_count)
                                 
                             elif self.current_token.token_type == 'value':
                                 param_buffer.append(self.current_token)
                             
                             else:
-                                pass #invalid syntax
+                                raise InvalidSyntax(f'\'{self.current_token.original}\'', self.lines, self.current_token.line_count)
 
-                            self.advance() #check for index ==> missing ')'
+                            try:
+                                self.advance()
+                            
+                            except IndexError:
+                                raise InvalidSyntax('Missing \')\'', self.lines, self.current_token.line_count)
 
                         if self.next_token().token_type == 'begin':
                             self.advance() #now '{'
@@ -357,19 +417,23 @@ class Parser:
                                     break
 
                                 body.append(self.current_token)
-                                self.advance() #check for index ==> missing '}'
+                                try:
+                                    self.advance()
+                                
+                                except IndexError:
+                                    raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                             
                             body_parser = Parser(body)
                             result.append(FunctionDefine(name, param, body_parser.parse()))
 
                         else:
-                            pass #syntax error: missing '{'
+                            raise InvalidSyntax('Missing \'{\'', self.lines, self.current_token.line_count)
                     
                     else:
-                        pass #syntax error: missing '('
+                        raise InvalidSyntax('Missing \'(\'', self.lines, self.current_token.line_count)
                 
                 else:
-                    pass #invalid syntax
+                    raise InvalidSyntax(f'\'{self.current_token.original}\'', self.lines, self.current_token.line_count)
             
             elif self.current_token.token_type == 'return':
                 self.advance() #check for index
@@ -380,7 +444,11 @@ class Parser:
                     if self.current_token.token_type == 'end_of_line': break
                     expr.append(self.current_token)
 
-                    self.advance() #check for index ==> missing ';'
+                    try:
+                        self.advance()
+
+                    except IndexError:
+                        raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
                 
                 result.append(Return(Expression(expr).parse()))
             
@@ -397,14 +465,18 @@ class Parser:
                     buffer.append(self.current_token)
                 
                 else:
-                    raise InvalidSyntax(f'\'{self.current_token.value}\'', self.lines, self.current_token.line_count)
+                    raise InvalidSyntax(f'\'{self.current_token.original}\'', self.lines, self.current_token.line_count)
 
             
             if self.current_pos < len(self.tokens) - 1: self.advance()
             else: break
         
         if len(buffer) != 0:
-            pass #syntax error: missing ';'
+            try:
+                self.advance()
+
+            except IndexError:
+                raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
         
         return result
         
@@ -524,7 +596,7 @@ class Expression:
                 result = self.array_operators()
 
                 if self.current_token != 'r_paren':
-                    pass #unclosed '('
+                    pass #missing '('
 
                 self.advance()
                 
@@ -544,7 +616,3 @@ class Expression:
             self.advance()
 
             return ValueNode(current_token.value)
-        
-
-
-
