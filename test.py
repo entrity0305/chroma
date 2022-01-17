@@ -3,15 +3,25 @@ from chroma.parse import *
 from chroma.compile import *
 
 code = '''
-if a == 1 
-{
-    if a == 2
-    {
-    }
+var x = f(
+    1, g(
+        3, 1 + 4
+    )
+);
+
+
+if x == 1 {
+    var y = 2 * x;
+} elif (x == 2) {
+    var y = 3 * x;
+} else {
+    var y = 4 * x;
 }
 
 
-function f(x, y, z) { return x + y + z; }
+function f(x) {
+    return 2* +x ^ 3;
+}
 '''
 
 lex_test = Lexer(code)

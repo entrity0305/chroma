@@ -109,7 +109,7 @@ class Parser:
                                 raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
                         
                         if len(expr) != 0:
-                            result.append(VarDefine(name, Expression(expr).parse()))
+                            result.append(VarDefine(name, Expression(expr, self.lines).parse()))
                         
                         else:
                             raise InvalidSyntax('\'=\'', self.lines, self.current_token.line_count)
@@ -145,7 +145,7 @@ class Parser:
                             raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
                     
                     if len(expr) != 0: 
-                        result.append(Assign(buffer, Expression(expr).parse()))
+                        result.append(Assign(buffer, Expression(expr, self.lines).parse()))
                         
                     else: 
                         raise InvalidSyntax('\'=\'', self.lines, self.current_token.line_count)
@@ -199,8 +199,8 @@ class Parser:
                     except IndexError:
                         raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                 
-                body_parser = Parser(body)
-                prev = If(Expression(expr).parse(), body_parser.parse(), [])
+                body_parser = Parser(body, self.lines)
+                prev = If(Expression(expr, self.lines).parse(), body_parser.parse(), [])
 
                 main_if = prev
                 
@@ -252,8 +252,8 @@ class Parser:
                             except IndexError:
                                 raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                         
-                        body_parser = Parser(body)
-                        new = If(Expression(expr).parse(), body_parser.parse(), [])
+                        body_parser = Parser(body, self.lines)
+                        new = If(Expression(expr, self.lines).parse(), body_parser.parse(), [])
 
                         prev.else_body = new
                         prev = new
@@ -289,7 +289,7 @@ class Parser:
                             except IndexError:
                                 raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                         
-                        body_parser = Parser(body)
+                        body_parser = Parser(body, self.lines)
                         new = body_parser.parse()
                         prev.else_body = new
 
@@ -340,8 +340,8 @@ class Parser:
                     except IndexError:
                         raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                 
-                body_parser = Parser(body)
-                result.append(While(Expression(expr).parse(), body_parser.parse()))
+                body_parser = Parser(body, self.lines)
+                result.append(While(Expression(expr, self.lines).parse(), body_parser.parse()))
             
             elif self.current_token.token_type == 'break':
                 self.advance()
@@ -423,7 +423,7 @@ class Parser:
                                 except IndexError:
                                     raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                             
-                            body_parser = Parser(body)
+                            body_parser = Parser(body, self.lines)
                             result.append(FunctionDefine(name, param, body_parser.parse()))
 
                         else:
@@ -450,12 +450,12 @@ class Parser:
                     except IndexError:
                         raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
                 
-                result.append(Return(Expression(expr).parse()))
+                result.append(Return(Expression(expr, self.lines).parse()))
             
             else:
                 if self.current_token.token_type == 'end_of_line':
                     if len(buffer) != 0:
-                        result.append(Expr(Expression(buffer).parse()))
+                        result.append(Expr(Expression(buffer, self.lines).parse()))
                         buffer = []
                     
                     else:
@@ -503,9 +503,12 @@ class NegativeValueNode:
 
 
 class Expression:
-    def __init__(self, tokens: list):
+    def __init__(self, tokens: list, lines: list):
         self.current_token = None
+        self.previous_token = None
         self.tokens = iter(tokens)
+
+        self.lines = lines
 
         self.advance()
 
@@ -513,6 +516,7 @@ class Expression:
     
     def advance(self):
         try:
+            self.previous_token = self.current_token
             self.current_token = next(self.tokens)
         
         except StopIteration:
@@ -525,7 +529,7 @@ class Expression:
         result = self.array_operators()
 
         if self.current_token != None:
-            pass #invalid syntax
+            raise InvalidSyntax(f'\'{self.current_token.original}\'', self.lines, self.current_token.line_count)
         
         return result
     
@@ -588,31 +592,48 @@ class Expression:
     
     def factor(self):
         current_token = self.current_token
-
-        if current_token.token_type == 'operator':
-            if current_token.value == 'l_paren':
-                self.opened.append(current_token)
-                self.advance()
-                result = self.array_operators()
-
-                if self.current_token != 'r_paren':
-                    pass #missing '('
-
-                self.advance()
-                
-                return result
-            
-            elif current_token.value == 'add':
-                self.advance()
-
-                return self.array_operators()
-            
-            elif current_token.value == 'sub':
-                self.advance()
-
-                return NegativeValueNode(self.array_operators())
         
-        elif current_token.token_type == 'value':
-            self.advance()
+        if current_token != None:
+            if current_token.token_type == 'operator':
+                if current_token.value == 'l_paren':
+                    self.opened.append(current_token)
+                    self.advance()
 
-            return ValueNode(current_token.value)
+                    if self.current_token != None:
+                        result = self.array_operators()
+                    
+                    else:
+                        raise InvalidSyntax('Unclosed \'(\'', self.lines, self.opened.pop().line_count)
+
+                    if not(self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value == 'r_paren'):
+                        if self.current_token == None:
+                            raise InvalidSyntax('Unclosed \'(\'', self.lines, self.opened.pop().line_count)
+
+                        elif self.current_token.token_type == 'value':
+                            raise InvalidSyntax(f'\'{self.current_token.original}\'', self.lines, self.current_token.line_count)
+                        
+                        raise InvalidSyntax('Unclosed \'(\'', self.lines, self.opened.pop().line_count)
+
+                    self.advance()
+                    
+                    return result
+                
+                elif current_token.value == 'add':
+                    self.advance()
+
+                    return self.array_operators()
+                
+                elif current_token.value == 'sub':
+                    self.advance()
+
+                    return NegativeValueNode(self.array_operators())
+            
+            elif current_token.token_type == 'value':
+                self.advance()
+
+                return ValueNode(current_token.value)
+        
+            raise InvalidSyntax(f'\'{self.previous_token.original}\'', self.lines, self.previous_token.line_count)
+        
+        else:
+            raise InvalidSyntax(f'\'{self.previous_token.original}\'', self.lines, self.previous_token.line_count)

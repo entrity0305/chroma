@@ -15,7 +15,6 @@ operators = {
     '*': 'mul',
     '/': 'div',
     '^': 'pow',
-    '%': 'mod',
     '>': 'greater',
     '<': 'less',
     '.': 'dot',
@@ -46,6 +45,7 @@ keywords = {
         'return': 'return',
         'if': 'if',
         'elif': 'elif',
+        'else': 'else',
         'while': 'while'
     },
     '{': {
@@ -88,14 +88,14 @@ class Lexer:
             if self.current_char == '\t': pass
             elif self.current_char == '\n':
                 if self.value != '':
-                    result.append(Token('value', self.value, line_count=self.line_count))
+                    result.append(Token('value', self.value, self.value, line_count=self.line_count))
                     self.value = ''
 
                 self.line_count += 1
             
             elif self.current_char == '(':
                 if self.value != '':
-                    result.append(Token('value', self.value, line_count=self.line_count))
+                    result.append(Token('value', self.value, self.value, line_count=self.line_count))
                     result.append(Token('operator', 'invoke', line_count=self.line_count))
                     self.value = ''
 
@@ -108,7 +108,7 @@ class Lexer:
                 
                 else:
                     if self.value != '':
-                        result.append(Token('value', self.value, line_count=self.line_count))
+                        result.append(Token('value', self.value, self.value, line_count=self.line_count))
                         self.value = ''
                 
                 if self.current_char in single_chars:
@@ -116,7 +116,7 @@ class Lexer:
             
             elif self.current_char + self.next_char() in double_chars:
                 if self.value != '':
-                    result.append(Token('value', self.value, line_count=self.line_count))
+                    result.append(Token('value', self.value, self.value, line_count=self.line_count))
                     self.value = ''
                 
                 result.append(Token('operator', double_chars[self.current_char + self.next_char()], self.current_char + self.next_char(), line_count=self.line_count))
@@ -124,14 +124,14 @@ class Lexer:
             
             elif self.current_char in single_chars:
                 if self.value != '':
-                    result.append(Token('value', self.value, line_count=self.line_count))
+                    result.append(Token('value', self.value, self.value, line_count=self.line_count))
                     self.value = ''
                 
                 result.append(Token(single_chars[self.current_char], self.current_char, self.current_char, line_count=self.line_count))
             
             elif self.current_char in operators:
                 if self.value != '':
-                    result.append(Token('value', self.value, line_count=self.line_count))
+                    result.append(Token('value', self.value, self.value, line_count=self.line_count))
                     self.value = ''
                 
                 result.append(Token('operator', operators[self.current_char], self.current_char, line_count=self.line_count))
