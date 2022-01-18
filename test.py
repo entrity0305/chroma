@@ -3,25 +3,23 @@ from chroma.parse import *
 from chroma.compile import *
 
 code = '''
-var x = f(
-    1, g(
-        3, 1 + 4
-    )
-);
+function is_prime(N) {
+    var k = 0;
 
+    while k < N 
+    {
+        if N % k == 0 {
+            return 0;
+        }
 
-if x == 1 {
-    var y = 2 * x;
-} elif (x == 2) {
-    var y = 3 * x;
-} else {
-    var y = 4 * x;
+        k = k + 1;
+    }
+
+    return 1;
 }
 
 
-function f(x) {
-    return 2* +x ^ 3;
-}
+println(is_prime(37));
 '''
 
 lex_test = Lexer(code)

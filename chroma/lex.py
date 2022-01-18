@@ -14,6 +14,7 @@ operators = {
     '-': 'sub',
     '*': 'mul',
     '/': 'div',
+    '%': 'mod',
     '^': 'pow',
     '>': 'greater',
     '<': 'less',

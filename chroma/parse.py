@@ -545,7 +545,7 @@ class Expression:
     def logical_operators(self):
         result = self.low_binary_operators()
 
-        while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value in ('equal', 'not_equal', 'greater_equal', 'less_equal', 'or', 'and'):
+        while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value in ('equal', 'not_equal', 'greater', 'less', 'greater_equal', 'less_equal', 'or', 'and'):
             op_type = self.current_token.value
             self.advance()
             result = BinaryOperation(result, op_type, self.low_binary_operators())
@@ -565,7 +565,7 @@ class Expression:
     def high_binary_operators(self):
         result = self.powered_operators()
 
-        while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value in ('mul', 'div'):
+        while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value in ('mul', 'div', 'mod'):
             op_type = self.current_token.value
             self.advance()
             result = BinaryOperation(result, op_type, self.powered_operators())
