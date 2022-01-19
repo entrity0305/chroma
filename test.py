@@ -3,6 +3,16 @@ from chroma.parse import *
 from chroma.compile import *
 
 code = '''
+var x = 1 + 2 * 3;
+
+if x == 1 {
+    x = 2;
+} elif x == 2 {
+    x = 3;
+} else {
+    x = 5;
+}
+
 function is_prime(N) {
     var k = 0;
 
@@ -18,7 +28,6 @@ function is_prime(N) {
     return 1;
 }
 
-
 println(is_prime(37));
 '''
 
@@ -28,5 +37,3 @@ print(lex_result)
 parse_test = Parser(lex_result, code.split('\n'))
 parse_result = parse_test.parse()
 print(parse_result)
-#compile_result = compile_statements(parse_result)
-#print(compile_result)

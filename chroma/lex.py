@@ -9,7 +9,14 @@ class Token:
     line_count: int = 0
     
 
-operators = {
+IDENTIFIERS = {
+    '{': 'begin',
+    '}': 'end',
+    ';': 'end_of_line',
+    '=': 'assign'
+}
+
+OPERATORS = {
     '+': 'add',
     '-': 'sub',
     '*': 'mul',
@@ -18,43 +25,26 @@ operators = {
     '^': 'pow',
     '>': 'greater',
     '<': 'less',
+    '>=': 'greater_equal',
+    '<=': 'less_equal',
+    '==': 'equal',
+    '!=': 'not_equal',
+    '||': 'or',
+    '&&': 'and',
     '.': 'dot',
     ',': 'comma',
     ')': 'r_paren'
 }
 
-single_chars = {
-    '{': 'begin',
-    '}': 'end',
-    ';': 'end_of_line',
-    '=': 'assign'
-}
-
-double_chars = {
-    '==': 'equal',
-    '!=': 'not_equal',
-    '>=': 'greater_equal',
-    '<=': 'less_equal',
-    '||': 'or',
-    '&&': 'and'
-}
-
-keywords = {
-    ' ': {
-        'var': 'var',
-        'function': 'function',
-        'return': 'return',
-        'if': 'if',
-        'elif': 'elif',
-        'else': 'else',
-        'while': 'while'
-    },
-    '{': {
-        'else': 'else'
-    },
-    ';': {
-        'break': 'break'
-    }
+KEYWORDS = {
+    'var': 'var',
+    'if': 'if',
+    'elif': 'elif',
+    'else': 'else',
+    'while': 'while',
+    'break': 'break',
+    'function': 'function',
+    'return': 'return'
 }
 
 
@@ -81,6 +71,16 @@ class Lexer:
         else:
             return ''
     
+    def get_token(self):
+        if self.value in KEYWORDS:
+            tok = Token(KEYWORDS[self.value], value=self.value, original=self.value, line_count=self.line_count)
+        
+        else:
+            tok = Token('value',value=self.value, original=self.value, line_count=self.line_count)
+
+        self.value = ''
+        return tok
+
     def lex(self):
         result = []
 
@@ -89,54 +89,39 @@ class Lexer:
             if self.current_char == '\t': pass
             elif self.current_char == '\n':
                 if self.value != '':
-                    result.append(Token('value', self.value, self.value, line_count=self.line_count))
-                    self.value = ''
+                    result.append(self.get_token())
 
                 self.line_count += 1
             
+            elif self.current_char == ' ':
+                if self.value != '':
+                    result.append(self.get_token())
+            
             elif self.current_char == '(':
                 if self.value != '':
-                    result.append(Token('value', self.value, self.value, line_count=self.line_count))
-                    result.append(Token('operator', 'invoke', line_count=self.line_count))
-                    self.value = ''
+                    result.append(self.get_token())
+                    result.append(Token('operator', value='invoke', original='(', line_count=self.line_count))
 
-                result.append(Token('operator', 'l_paren', '(', line_count=self.line_count))
-
-            elif self.current_char in keywords:
-                if self.value in keywords[self.current_char]:
-                    result.append(Token(keywords[self.current_char][self.value], self.value, self.value, line_count=self.line_count))
-                    self.value = ''
-                
-                else:
-                    if self.value != '':
-                        result.append(Token('value', self.value, self.value, line_count=self.line_count))
-                        self.value = ''
-                
-                if self.current_char in single_chars:
-                    result.append(Token(single_chars[self.current_char], self.current_char, self.current_char, line_count=self.line_count))
+                result.append(Token('operator', value='l_paren', original='(', line_count=self.line_count))
             
-            elif self.current_char + self.next_char() in double_chars:
+            elif self.current_char + self.next_char() in OPERATORS:
                 if self.value != '':
-                    result.append(Token('value', self.value, self.value, line_count=self.line_count))
-                    self.value = ''
+                    result.append(self.get_token())
                 
-                result.append(Token('operator', double_chars[self.current_char + self.next_char()], self.current_char + self.next_char(), line_count=self.line_count))
+                result.append(Token('operator', value=OPERATORS[self.current_char + self.next_char()], original=self.current_char + self.next_char(), line_count=self.line_count))
                 self.advance()
             
-            elif self.current_char in single_chars:
+            elif self.current_char in OPERATORS:
                 if self.value != '':
-                    result.append(Token('value', self.value, self.value, line_count=self.line_count))
-                    self.value = ''
+                    result.append(self.get_token())
                 
-                result.append(Token(single_chars[self.current_char], self.current_char, self.current_char, line_count=self.line_count))
+                result.append(Token('operator', value=OPERATORS[self.current_char], original=self.current_char, line_count=self.line_count))
             
-            elif self.current_char in operators:
+            elif self.current_char in IDENTIFIERS:
                 if self.value != '':
-                    result.append(Token('value', self.value, self.value, line_count=self.line_count))
-                    self.value = ''
+                    result.append(self.get_token())
                 
-                result.append(Token('operator', operators[self.current_char], self.current_char, line_count=self.line_count))
-
+                result.append(Token(IDENTIFIERS[self.current_char], value=self.current_char, original=self.current_char, line_count=self.line_count))
             
             else:
                 self.value += self.current_char

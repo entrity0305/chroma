@@ -114,7 +114,7 @@ class Parser:
                             result.append(VarDefine(name, []))
 
                         else:
-                            InvalidSyntax(f'\'{self.next_token().original}\'', self.lines, self.next_token().line_count)
+                            raise InvalidSyntax(f'\'{self.next_token().original}\'', self.lines, self.next_token().line_count)
 
                 else:
                     raise InvalidSyntax(f'\'{name.original}\'', self.lines, name.line_count)
@@ -168,6 +168,9 @@ class Parser:
                     except IndexError:
                         raise InvalidSyntax('Missing \'{\'', self.lines, self.current_token.line_count)
                 
+                if len(expr) == 0:
+                    raise InvalidSyntax('\'{\'', self.lines, self.current_token.line_count)
+                
                 body = []
                 opened = []
                 opened.append(self.current_token)
@@ -219,6 +222,9 @@ class Parser:
                             
                             except IndexError:
                                 raise InvalidSyntax('Missing \'{\'', self.lines, self.current_token.line_count)
+                        
+                        if len(expr) == 0:
+                            raise InvalidSyntax('\'{\'', self.lines, self.current_token.line_count)
                         
                         body = []
                         opened = []
@@ -310,6 +316,9 @@ class Parser:
                     
                     except IndexError:
                         raise InvalidSyntax('Missing \'{\'', self.lines, self.current_token.token_type)
+                
+                if len(expr) == 0:
+                    raise InvalidSyntax('\'{\'', self.lines, self.current_token.line_count)
                     
                 #now '{'
                 body = []
@@ -444,6 +453,9 @@ class Parser:
 
                     except IndexError:
                         raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
+                
+                if len(expr) == 0:
+                    raise InvalidSyntax('\';\'', self.lines, self.current_token.line_count)
                 
                 result.append(Return(Expression(expr, self.lines).parse()))
             
@@ -627,8 +639,14 @@ class Expression:
                 self.advance()
 
                 return ValueNode(current_token.value)
-        
-            raise InvalidSyntax(f'\'{self.previous_token.original}\'', self.lines, self.previous_token.line_count)
-        
+
+            if self.previous_token != None:
+                raise InvalidSyntax(f'\'{self.previous_token.original}\'', self.lines, self.previous_token.line_count)
+            
+            else:
+                self.advance()
+                if self.current_token != None:
+                    raise InvalidSyntax(f'\'{self.previous_token.original}\'', self.lines, self.current_token.line_count)
+
         else:
             raise InvalidSyntax(f'\'{self.previous_token.original}\'', self.lines, self.previous_token.line_count)
