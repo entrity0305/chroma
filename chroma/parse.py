@@ -641,12 +641,14 @@ class Expression:
                 return ValueNode(current_token.value)
 
             if self.previous_token != None:
-                raise InvalidSyntax(f'\'{self.previous_token.original}\'', self.lines, self.previous_token.line_count)
+                if self.previous_token.token_type == 'operator' and self.previous_token.value == 'l_paren':
+                    pass
+                else:
+                    raise InvalidSyntax(f'\'{self.previous_token.original}\'', self.lines, self.previous_token.line_count)
             
             else:
-                self.advance()
                 if self.current_token != None:
-                    raise InvalidSyntax(f'\'{self.previous_token.original}\'', self.lines, self.current_token.line_count)
+                    raise InvalidSyntax(f'\'{self.current_token.original}\'', self.lines, self.current_token.line_count)
 
         else:
             raise InvalidSyntax(f'\'{self.previous_token.original}\'', self.lines, self.previous_token.line_count)

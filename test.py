@@ -3,32 +3,21 @@ from chroma.parse import *
 from chroma.compile import *
 
 code = '''
-var x = 1 + 2 * 3;
+###############
+#comment test
+############### 
 
-if x == 1 {
-    x = 2;
-} elif x == 2 {
-    x = 3;
-} else {
-    x = 5;
-}
 
-function is_prime(N) {
-    var k = 0;
+var y = g() + 3; #this is how a variable is declared
 
-    while k < N 
-    {
-        if N % k == 0 {
-            return 0;
-        }
-
-        k = k + 1;
-    }
-
-    return 1;
-}
-
-println(is_prime(37));
+#this is a comment
+var z = g(
+    f(
+        4,
+        5
+    )(),
+    3 + (1 * 2)
+);
 '''
 
 lex_test = Lexer(code)
