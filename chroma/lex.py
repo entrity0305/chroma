@@ -151,6 +151,7 @@ class Lexer:
             else:
                 if self.current_char == '\n': 
                     self.is_comment = False
+                    self.line_count += 1
 
             self.advance()
         
