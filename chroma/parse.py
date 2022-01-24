@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from tokenize import String
+from turtle import st
 from .lex import *
 from .exception import *
 
@@ -468,7 +470,7 @@ class Parser:
                     else:
                         raise InvalidSyntax('\';\'', self.lines, self.current_token.line_count)
 
-                elif self.current_token.token_type == 'value' or self.current_token.token_type == 'operator':
+                elif self.current_token.token_type == 'value' or self.current_token.token_type == 'operator' or self.current_token.token_type == 'string':
                     buffer.append(self.current_token)
                 
                 else:
@@ -499,6 +501,10 @@ class BinaryOperation:
 
 @dataclass
 class ValueNode:
+    value: str
+
+@dataclass
+class StringNode:
     value: str
 
 class NegativeValueNode:
@@ -639,6 +645,11 @@ class Expression:
                 self.advance()
 
                 return ValueNode(current_token.value)
+            
+            elif current_token.token_type == 'string':
+                self.advance()
+
+                return StringNode(current_token.value)
 
             if self.previous_token != None:
                 if self.previous_token.token_type == 'operator' and self.previous_token.value == 'l_paren':

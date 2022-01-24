@@ -3,21 +3,29 @@ from chroma.parse import *
 from chroma.compile import *
 
 code = '''
-###############
-#comment test
-############### 
+#this function checks if integer N is a prime number
+function is_prime(N) {
+    var k = 2;
+
+    while k < N 
+    {
+        if N % k == 0 {
+            return 0;
+        }
+
+        k = k + 1;
+    }
+
+    return 1;
+}
 
 
-var y = g() + 3; #this is how a variable is declared
+var is_this_number_prime = is_prime(13);
 
-#this is a comment
-var z = g(
-    f(
-        4,
-        5
-    )(),
-    3 + (1 * 2)
-);
+var x = 1;
+x = 2;
+
+print("Hello, world!");
 '''
 
 lex_test = Lexer(code)
