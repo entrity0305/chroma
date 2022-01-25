@@ -58,6 +58,7 @@ class Lexer:
 
         self.is_comment = False
         self.is_string = False
+        self.string_start_line_count = 0
 
         self.code = code
 
@@ -109,6 +110,7 @@ class Lexer:
                             result.append(self.get_token())
                         
                         self.is_string = True
+                        self.string_start_line_count = self.line_count
                     
                     elif self.current_char == ' ':
                         if self.value != '':
@@ -175,7 +177,7 @@ class Lexer:
                         self.advance()
                     
                     except IndexError:
-                        raise InvalidSyntax('Unclosed \'"\'', self.code.split('\n'), self.line_count - 2)
+                        raise InvalidSyntax('Unclosed \'"\'', self.code.split('\n'), self.string_start_line_count)
             
             else:
                 if self.current_pos >= len(self.code) - 1: break #when at the end of code
