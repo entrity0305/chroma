@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from tokenize import String
-from turtle import st
 from .lex import *
 from .exception import *
 
@@ -9,47 +7,47 @@ from .exception import *
 class VarDefine:
     name: Token
     expr: list
-    statement_type = 'VarDefine'
+    statement_type = 'var'
 
 @dataclass
 class Assign:
     name: list
     expr: list
-    statement_type = 'Assign'
+    statement_type = 'assign'
 
 @dataclass
 class If:
     expr: list
     body: list
     else_body: list
-    statement_type = 'If'
+    statement_type = 'if'
 
 @dataclass
 class While:
     expr: list
     body: list
-    statement_type = 'While'
+    statement_type = 'while'
 
 @dataclass
 class Break:
-    statement_type = 'Break'
+    statement_type = 'break'
 
 @dataclass
 class FunctionDefine:
     name: Token
     param: list
     body: list
-    statement_type = 'Function'
+    statement_type = 'function'
 
 @dataclass
 class Return:
     expr: list
-    statement_type = 'Return'
+    statement_type = 'return'
 
 @dataclass
 class Expr:
     expr: list
-    statement_type = 'Expr'
+    statement_type = 'expr'
 
 
 class Parser:
@@ -258,7 +256,7 @@ class Parser:
                         body_parser = Parser(body, self.lines)
                         new = If(Expression(expr, self.lines).parse(), body_parser.parse(), [])
 
-                        prev.else_body = new
+                        prev.else_body.append(new)
                         prev = new
                     
                     if self.next_token().token_type == 'else':
@@ -491,10 +489,13 @@ class Parser:
         
 
 class BinaryOperation:
-    def __init__(self, left, operator, right):
+    def __init__(self, left, operator, right, line_count):
         self.left = left
         self.operator = operator
         self.right = right
+        self.node_type = 'operator'
+
+        self.line_count = line_count
     
     def __repr__(self):
         return f'({self.left} {self.operator} {self.right})'
@@ -502,14 +503,23 @@ class BinaryOperation:
 @dataclass
 class ValueNode:
     value: str
+    node_type = 'value'
+
+    line_count: int = 0
 
 @dataclass
 class StringNode:
     value: str
+    node_type = 'string'
+
+    line_count: int = 0
 
 class NegativeValueNode:
-    def __init__(self, value):
+    def __init__(self, value, line_count):
         self.value = value
+        self.node_type = 'negative_value'
+
+        self.line_count = line_count
     
     def __repr__(self):
         return f'-({self.value})'
@@ -550,8 +560,9 @@ class Expression:
         result = self.logical_operators()
 
         while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value == 'comma':
+            line_count = self.current_token.line_count
             self.advance()
-            result = BinaryOperation(result, 'array', self.logical_operators())
+            result = BinaryOperation(result, 'array', self.logical_operators(), line_count)
         
         return result
     
@@ -560,8 +571,9 @@ class Expression:
 
         while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value in ('equal', 'not_equal', 'greater', 'less', 'greater_equal', 'less_equal', 'or', 'and'):
             op_type = self.current_token.value
+            line_count = self.current_token.line_count
             self.advance()
-            result = BinaryOperation(result, op_type, self.low_binary_operators())
+            result = BinaryOperation(result, op_type, self.low_binary_operators(), line_count)
         
         return result
     
@@ -570,8 +582,9 @@ class Expression:
         
         while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value in ('add', 'sub'):
             op_type = self.current_token.value
+            line_count = self.current_token.line_count
             self.advance()
-            result = BinaryOperation(result, op_type, self.high_binary_operators())
+            result = BinaryOperation(result, op_type, self.high_binary_operators(), line_count)
         
         return result
     
@@ -580,17 +593,29 @@ class Expression:
 
         while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value in ('mul', 'div', 'mod'):
             op_type = self.current_token.value
+            line_count = self.current_token.line_count
             self.advance()
-            result = BinaryOperation(result, op_type, self.powered_operators())
+            result = BinaryOperation(result, op_type, self.powered_operators(), line_count)
         
         return result
     
     def powered_operators(self):
-        result = self.invoke_operators()
+        result = self.dotted_operators()
 
         while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value == 'pow':
+            line_count = self.current_token.line_count
             self.advance()
-            result = BinaryOperation(result, 'pow', self.invoke_operators())
+            result = BinaryOperation(result, 'pow', self.dotted_operators(), line_count)
+        
+        return result
+    
+    def dotted_operators(self): #includes float(ex) 3.14) and attribute operations(ex) a.b.c)
+        result = self.invoke_operators()
+
+        while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value == 'dot':
+            line_count = self.current_token.line_count
+            self.advance()
+            result = BinaryOperation(result, 'dot', self.invoke_operators(), line_count)
         
         return result
     
@@ -598,14 +623,15 @@ class Expression:
         result = self.factor()
 
         while self.current_token != None and self.current_token.token_type == 'operator' and self.current_token.value == 'invoke':
+            line_count = self.current_token.line_count
             self.advance()
-            result = BinaryOperation(result, 'invoke', self.factor())
+            result = BinaryOperation(result, 'invoke', self.factor(), line_count)
         
         return result
     
     def factor(self):
         current_token = self.current_token
-        
+
         if current_token != None:
             if current_token.token_type == 'operator':
                 if current_token.value == 'l_paren':
@@ -639,17 +665,17 @@ class Expression:
                 elif current_token.value == 'sub':
                     self.advance()
 
-                    return NegativeValueNode(self.array_operators())
+                    return NegativeValueNode(self.array_operators(), current_token.line_count)
             
             elif current_token.token_type == 'value':
                 self.advance()
 
-                return ValueNode(current_token.value)
+                return ValueNode(current_token.value, current_token.line_count)
             
             elif current_token.token_type == 'string':
                 self.advance()
 
-                return StringNode(current_token.value)
+                return StringNode(current_token.value, current_token.line_count)
 
             if self.previous_token != None:
                 if self.previous_token.token_type == 'operator' and self.previous_token.value == 'l_paren':
