@@ -2,23 +2,6 @@ from dataclasses import dataclass
 from .exception import *
 
 
-#push/load value
-@dataclass
-class Pushi:
-    value: str
-
-@dataclass
-class Pushf:
-    value: str
-
-@dataclass
-class Pushstr:
-    value: str
-
-@dataclass
-class Load:
-    value: str
-
 #operators
 @dataclass
 class Add:
@@ -94,6 +77,22 @@ class Invoke:
 
 #commands
 @dataclass
+class Pushi:
+    value: str
+
+@dataclass
+class Pushf:
+    value: str
+
+@dataclass
+class Pushstr:
+    value: str
+
+@dataclass
+class Load:
+    value: str
+
+@dataclass
 class Var:
     name: str
 
@@ -108,6 +107,13 @@ class Ifzero:
 @dataclass
 class Goto:
     pos: int
+
+#function
+@dataclass
+class FunctionDef:
+    name: str
+    param: list
+    body: list
 
 def compile_expression(expr):
     if expr.node_type == 'operator':
@@ -184,9 +190,11 @@ def compile_expression(expr):
         
         elif expr.node_type == 'negative_value':
             return compile_expression(expr.value) + [Neg()]
-        
-        
 
+#TODO:
+#   Add return statement
+#   Add while statement
+#   Add error handling
 def compile_statements(statements, start = 0):
     result = []
 
@@ -221,6 +229,16 @@ def compile_statements(statements, start = 0):
             result += statement
 
             current_pos += len(statement)
+        
+        elif current_statement.statement_type == 'function':
+            name = current_statement.name.value
+            param = [p.value for p in current_statement.param]
+
+            body = compile_statements(current_statement.body)
+
+            current_pos += 1
+
+            result += [FunctionDef(name, param, body)]
         
         elif current_statement.statement_type == 'expr':
             expr = compile_expression(current_statement.expr)
