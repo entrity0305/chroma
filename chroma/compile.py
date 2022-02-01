@@ -115,6 +115,10 @@ class FunctionDef:
     param: list
     body: list
 
+@dataclass
+class Return:
+    pass
+
 def compile_expression(expr):
     if expr.node_type == 'operator':
         if expr.operator == 'dot':
@@ -192,10 +196,10 @@ def compile_expression(expr):
             return compile_expression(expr.value) + [Neg()]
 
 #TODO:
-#   Add return statement
-#   Add while statement
+#   Add return statement [v]
+#   Add while statement [v]
 #   Add error handling
-def compile_statements(statements, start = 0):
+def compile_statements(statements, start = 0, break_pos = 0, in_while = False, in_function = False):
     result = []
 
     current_pos = start
@@ -220,8 +224,8 @@ def compile_statements(statements, start = 0):
             expr = compile_expression(current_statement.expr)
             result += expr
             current_pos += len(expr)
-            body = compile_statements(current_statement.body, current_pos + 1)
-            else_body = compile_statements(current_statement.else_body, current_pos + len(body) + 2)
+            body = compile_statements(current_statement.body, current_pos + 1, break_pos, in_while, in_function)
+            else_body = compile_statements(current_statement.else_body, current_pos + len(body) + 2, break_pos, in_while, in_function)
             zero_jump_pos = current_pos + len(body) + 2
             not_zero_jump_pos = zero_jump_pos + len(else_body)
 
@@ -230,15 +234,47 @@ def compile_statements(statements, start = 0):
 
             current_pos += len(statement)
         
+        elif current_statement.statement_type == 'while':
+            loop_start_pos = current_pos
+            expr = compile_expression(current_statement.expr)
+            result += expr
+            current_pos += len(expr)
+            body = compile_statements(current_statement.body, current_pos + 1, current_pos, True, in_function)
+            zero_jump_pos = current_pos + len(body) + 2
+
+            statement = [Ifzero(zero_jump_pos)] + body + [Goto(loop_start_pos)]
+            result += statement
+
+            current_pos += len(statement)
+        
+        elif current_statement.statement_type == 'break':
+            if in_while:
+                result += [Pushi('0')] + [Goto(break_pos)]
+                current_pos += 2
+
+            else:
+                pass #invalid syntax
+        
         elif current_statement.statement_type == 'function':
             name = current_statement.name.value
             param = [p.value for p in current_statement.param]
 
-            body = compile_statements(current_statement.body)
+            body = compile_statements(current_statement.body, in_function=True)
 
             current_pos += 1
 
             result += [FunctionDef(name, param, body)]
+        
+        elif current_statement.statement_type == 'return':
+            if in_function:
+                expr = compile_expression(current_statement.expr)
+                result += expr
+                result.append(Return())
+
+                current_pos += len(expr) + 1
+
+            else:
+                pass #invalid syntax
         
         elif current_statement.statement_type == 'expr':
             expr = compile_expression(current_statement.expr)
