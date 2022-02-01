@@ -5,25 +5,15 @@ from chroma.compile import *
 import time
 
 code = '''
-function is_prime(N)
+function foo(x)
 {
-    var k = 2;
-
-    while k < N {
-        if N % k == 0 {
-            return 0;
-        } else {
-        }
-
-        k = k + 1;
+    while x == 4 {
+        var y = g(
+            1, 2
+        );
+        break;
     }
 }
-
-
-function add2Num(x, y) { return x + y; }
-
-
-println(is_prime(23));
 '''
 s = time.time()
 lex_test = Lexer(code)
@@ -32,7 +22,7 @@ print(lex_result)
 parse_test = Parser(lex_result, code.split('\n'))
 parse_result = parse_test.parse()
 print(parse_result)
-compile_result = compile_statements(parse_result)
+compile_result = compile_statements(parse_result, code.split('\n'))
 
 print('\n-----------------------------------------------------------------')
 for line_num in range(len(compile_result)):

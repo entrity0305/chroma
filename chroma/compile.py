@@ -5,108 +5,124 @@ from .exception import *
 #operators
 @dataclass
 class Add:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Sub:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Neg:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Mul:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Div:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Mod:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Pow:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Greater:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Less:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Greater_equal:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Less_equal:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Equal:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Not_equal:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Or:
-    pass
+    line_count: int = 0
 
 @dataclass
 class And:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Attr:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Array:
-    pass
+    line_count: int = 0
 
 @dataclass
 class Invoke:
-    pass
+    line_count: int = 0
 
 #commands
 @dataclass
 class Pushi:
     value: str
 
+    line_count: int = 0
+
 @dataclass
 class Pushf:
     value: str
+
+    line_count: int = 0
 
 @dataclass
 class Pushstr:
     value: str
 
+    line_count: int = 0
+
 @dataclass
 class Load:
     value: str
+
+    line_count: int = 0
 
 @dataclass
 class Var:
     name: str
 
+    line_count: int = 0
+
 @dataclass
 class Assign:
     name: str
+
+    line_count: int = 0
 
 @dataclass
 class Ifzero:
     pos: int
 
+    line_count: int = 0
+
 @dataclass
 class Goto:
     pos: int
+
+    line_count: int = 0
 
 #function
 @dataclass
@@ -115,169 +131,168 @@ class FunctionDef:
     param: list
     body: list
 
+    line_count: int = 0
+
 @dataclass
 class Return:
-    pass
+    line_count: int = 0
 
-def compile_expression(expr):
+def compile_expression(expr, lines: list = []):
     if expr.node_type == 'operator':
         if expr.operator == 'dot':
             if expr.left.node_type == 'value':
                 if expr.left.value.isdigit():
                     if expr.right.node_type == 'value':
                         if expr.right.value.isdigit(): #when float
-                            return [Pushf(expr.left.value + '.' + expr.right.value)]
+                            return [Pushf(expr.left.value + '.' + expr.right.value, expr.left.line_count)]
             
             if expr.right.node_type == 'value':
                 if expr.right.value.isdigit():
-                    pass #invalid syntax
+                    raise InvalidSyntax(f'\'{expr.right.value}\'', lines, expr.right.line_count)
 
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Attr()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Attr(expr.line_count)]
 
         elif expr.operator == 'add':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Add()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Add(expr.line_count)]
 
         elif expr.operator == 'sub':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Sub()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Sub(expr.line_count)]
 
         elif expr.operator == 'mul':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Mul()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Mul(expr.line_count)]
         
         elif expr.operator == 'div':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Div()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Div(expr.line_count)]
         
         elif expr.operator == 'mod':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Mod()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Mod(expr.line_count)]
         
         elif expr.operator == 'pow':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Pow()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Pow(expr.line_count)]
         
         elif expr.operator == 'greater':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Greater()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Greater(expr.line_count)]
         
         elif expr.operator == 'less':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Less()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Less(expr.line_count)]
         
         elif expr.operator == 'greater_equal':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Greater_equal()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Greater_equal(expr.line_count)]
         
         elif expr.operator == 'less_equal':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Less_equal()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Less_equal(expr.line_count)]
 
         elif expr.operator == 'equal':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Equal()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Equal(expr.line_count)]
         
         elif expr.operator == 'not_equal':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Not_equal()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Not_equal(expr.line_count)]
 
         elif expr.operator == 'or':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Or()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Or(expr.line_count)]
         
         elif expr.operator == 'and':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [And()]
-        
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [And(expr.line_count)]
+
         elif expr.operator == 'array':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Array()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Array(expr.line_count)]
         
         elif expr.operator == 'invoke':
-            return compile_expression(expr.left) + compile_expression(expr.right) + [Invoke()]
+            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Invoke(expr.line_count)]
 
     else:
         if expr.node_type == 'value':
             if expr.value.isdigit():
-                return [Pushi(expr.value)]
+                return [Pushi(expr.value, expr.line_count)]
             
-            return [Load(expr.value)]
+            return [Load(expr.value, expr.line_count)]
         
         elif expr.node_type == 'string':
-            return [Pushstr(expr.value)]
+            return [Pushstr(expr.value, expr.line_count)]
         
         elif expr.node_type == 'negative_value':
-            return compile_expression(expr.value) + [Neg()]
+            return compile_expression(expr.value, expr.line_count) + [Neg(expr.line_count)]
 
-#TODO:
-#   Add return statement [v]
-#   Add while statement [v]
-#   Add error handling
-def compile_statements(statements, start = 0, break_pos = 0, in_while = False, in_function = False):
+
+def compile_statements(statements, lines: list = [], start: int = 0, break_pos: int = 0, in_while: bool = False, in_function: bool = False):
     result = []
 
     current_pos = start
     for current_statement in statements:
         if current_statement.statement_type == 'var':
-            expr = compile_expression(current_statement.expr)
+            expr = compile_expression(current_statement.expr, lines)
             result += expr
-            result.append(Var(current_statement.name.value))
+            result.append(Var(current_statement.name.value, current_statement.line_count))
 
             current_pos += len(expr) + 1
         
         elif current_statement.statement_type == 'assign':
-            expr = compile_expression(current_statement.expr)
+            expr = compile_expression(current_statement.expr, lines)
 
             if len(current_statement.name) == 1:
                 result += expr
-                result.append(Assign(current_statement.name[0].value))
+                result.append(Assign(current_statement.name[0].value, current_statement.line_count))
 
                 current_pos += len(expr) + 1
 
         elif current_statement.statement_type == 'if':
-            expr = compile_expression(current_statement.expr)
+            expr = compile_expression(current_statement.expr, lines)
             result += expr
             current_pos += len(expr)
-            body = compile_statements(current_statement.body, current_pos + 1, break_pos, in_while, in_function)
-            else_body = compile_statements(current_statement.else_body, current_pos + len(body) + 2, break_pos, in_while, in_function)
+            body = compile_statements(current_statement.body, lines, current_pos + 1, break_pos, in_while, in_function)
+            else_body = compile_statements(current_statement.else_body, lines, current_pos + len(body) + 2, break_pos, in_while, in_function)
             zero_jump_pos = current_pos + len(body) + 2
             not_zero_jump_pos = zero_jump_pos + len(else_body)
 
-            statement = [Ifzero(zero_jump_pos)] + body + [Goto(not_zero_jump_pos)] + else_body
+            statement = [Ifzero(zero_jump_pos, current_statement.line_count)] + body + [Goto(not_zero_jump_pos, current_statement.line_count)] + else_body
             result += statement
 
             current_pos += len(statement)
         
         elif current_statement.statement_type == 'while':
             loop_start_pos = current_pos
-            expr = compile_expression(current_statement.expr)
+            expr = compile_expression(current_statement.expr, lines)
             result += expr
             current_pos += len(expr)
-            body = compile_statements(current_statement.body, current_pos + 1, current_pos, True, in_function)
+            body = compile_statements(current_statement.body, lines, current_pos + 1, current_pos, True, in_function)
             zero_jump_pos = current_pos + len(body) + 2
 
-            statement = [Ifzero(zero_jump_pos)] + body + [Goto(loop_start_pos)]
+            statement = [Ifzero(zero_jump_pos, current_statement.line_count)] + body + [Goto(loop_start_pos, current_statement.line_count)]
             result += statement
 
             current_pos += len(statement)
         
         elif current_statement.statement_type == 'break':
             if in_while:
-                result += [Pushi('0')] + [Goto(break_pos)]
+                result += [Pushi('0', current_statement.line_count)] + [Goto(break_pos, current_statement.line_count)]
                 current_pos += 2
 
             else:
-                pass #invalid syntax
+                raise InvalidSyntax(f'\'break\' outside loop', lines, current_statement.line_count)
         
         elif current_statement.statement_type == 'function':
             name = current_statement.name.value
             param = [p.value for p in current_statement.param]
 
-            body = compile_statements(current_statement.body, in_function=True)
+            body = compile_statements(current_statement.body, lines, in_function=True)
 
             current_pos += 1
 
-            result += [FunctionDef(name, param, body)]
+            result += [FunctionDef(name, param, body, current_statement.line_count)]
         
         elif current_statement.statement_type == 'return':
             if in_function:
-                expr = compile_expression(current_statement.expr)
+                expr = compile_expression(current_statement.expr, lines)
                 result += expr
-                result.append(Return())
+                result.append(Return(current_statement.line_count))
 
                 current_pos += len(expr) + 1
 
             else:
-                pass #invalid syntax
+                raise InvalidSyntax(f'\'return\' outside function', lines, current_statement.line_count)
         
         elif current_statement.statement_type == 'expr':
-            expr = compile_expression(current_statement.expr)
+            expr = compile_expression(current_statement.expr, lines)
             result += expr
             current_pos += len(expr)
 

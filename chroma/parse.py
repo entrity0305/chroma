@@ -9,11 +9,15 @@ class VarDefine:
     expr: list
     statement_type = 'var'
 
+    line_count: int = 0
+
 @dataclass
 class Assign:
     name: list
     expr: list
     statement_type = 'assign'
+
+    line_count: int = 0
 
 @dataclass
 class If:
@@ -22,15 +26,21 @@ class If:
     else_body: list
     statement_type = 'if'
 
+    line_count: int = 0
+
 @dataclass
 class While:
     expr: list
     body: list
     statement_type = 'while'
 
+    line_count: int = 0
+
 @dataclass
 class Break:
     statement_type = 'break'
+
+    line_count: int = 0
 
 @dataclass
 class FunctionDefine:
@@ -39,15 +49,21 @@ class FunctionDefine:
     body: list
     statement_type = 'function'
 
+    line_count: int = 0
+
 @dataclass
 class Return:
     expr: list
     statement_type = 'return'
 
+    line_count: int = 0
+
 @dataclass
 class Expr:
     expr: list
     statement_type = 'expr'
+
+    line_count: int = 0
 
 
 class Parser:
@@ -79,6 +95,7 @@ class Parser:
 
         while self.current_pos < len(self.tokens):
             if self.current_token.token_type == 'var':
+                var_line_count = self.current_token.line_count
                 name = self.next_token()
                 if name.token_type == 'value': #check if name is valid
                     self.advance()
@@ -104,14 +121,14 @@ class Parser:
                                 raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
                         
                         if len(expr) != 0:
-                            result.append(VarDefine(name, Expression(expr, self.lines).parse()))
+                            result.append(VarDefine(name, Expression(expr, self.lines).parse(), var_line_count))
                         
                         else:
                             raise InvalidSyntax('\'=\'', self.lines, self.current_token.line_count)
 
                     else:
                         if self.next_token().token_type == 'end_of_line': #when value is not initiallized
-                            result.append(VarDefine(name, []))
+                            result.append(VarDefine(name, [], var_line_count))
 
                         else:
                             raise InvalidSyntax(f'\'{self.next_token().original}\'', self.lines, self.next_token().line_count)
@@ -120,6 +137,8 @@ class Parser:
                     raise InvalidSyntax(f'\'{name.original}\'', self.lines, name.line_count)
             
             elif self.current_token.token_type == 'assign':
+                assign_line_count = self.current_token.line_count
+
                 if len(buffer) != 0:
                     try:
                         self.advance()
@@ -140,7 +159,7 @@ class Parser:
                             raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
                     
                     if len(expr) != 0: 
-                        result.append(Assign(buffer, Expression(expr, self.lines).parse()))
+                        result.append(Assign(buffer, Expression(expr, self.lines).parse(), assign_line_count))
                         
                     else: 
                         raise InvalidSyntax('\'=\'', self.lines, self.current_token.line_count)
@@ -151,6 +170,8 @@ class Parser:
                     raise InvalidSyntax('\'=\'', self.lines, self.current_token.line_count)
             
             elif self.current_token.token_type == 'if':
+                if_line_count = self.current_token.line_count
+
                 try:
                     self.advance()
                 
@@ -198,13 +219,16 @@ class Parser:
                         raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                 
                 body_parser = Parser(body, self.lines)
-                prev = If(Expression(expr, self.lines).parse(), body_parser.parse(), [])
+                prev = If(Expression(expr, self.lines).parse(), body_parser.parse(), [], if_line_count)
 
                 main_if = prev
                 
                 while self.next_token().token_type == 'elif' or self.next_token().token_type == 'else':
                     if self.next_token().token_type == 'elif':
                         self.advance() #check for index
+
+                        elif_line_count = self.current_token.line_count
+
                         try:
                             self.advance()
                         
@@ -254,7 +278,7 @@ class Parser:
                                 raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                         
                         body_parser = Parser(body, self.lines)
-                        new = If(Expression(expr, self.lines).parse(), body_parser.parse(), [])
+                        new = If(Expression(expr, self.lines).parse(), body_parser.parse(), [], elif_line_count)
 
                         prev.else_body.append(new)
                         prev = new
@@ -299,6 +323,8 @@ class Parser:
                 result.append(main_if)
             
             elif self.current_token.token_type == 'while':
+                while_line_count = self.current_token.line_count
+
                 try:
                     self.advance()
 
@@ -345,13 +371,16 @@ class Parser:
                         raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                 
                 body_parser = Parser(body, self.lines)
-                result.append(While(Expression(expr, self.lines).parse(), body_parser.parse()))
+                result.append(While(Expression(expr, self.lines).parse(), body_parser.parse(), while_line_count))
             
             elif self.current_token.token_type == 'break':
+                break_line_pos = self.current_token.line_count
                 self.advance()
-                result.append(Break())
+                result.append(Break(break_line_pos))
             
             elif self.current_token.token_type == 'function':
+                function_line_count = self.current_token.line_count
+
                 name = self.next_token() 
                 if name.token_type == 'value': #check if name is valid
                     self.advance()
@@ -428,7 +457,7 @@ class Parser:
                                     raise InvalidSyntax('Unclosed \'{\'', self.lines, opened.pop().line_count)
                             
                             body_parser = Parser(body, self.lines)
-                            result.append(FunctionDefine(name, param, body_parser.parse()))
+                            result.append(FunctionDefine(name, param, body_parser.parse(), function_line_count))
 
                         else:
                             raise InvalidSyntax('Missing \'{\'', self.lines, self.current_token.line_count)
@@ -440,6 +469,7 @@ class Parser:
                     raise InvalidSyntax(f'\'{self.current_token.original}\'', self.lines, self.current_token.line_count)
             
             elif self.current_token.token_type == 'return':
+                return_line_count = self.current_token.line_count
                 self.advance() #check for index
 
                 expr = []
@@ -457,12 +487,12 @@ class Parser:
                 if len(expr) == 0:
                     raise InvalidSyntax('\';\'', self.lines, self.current_token.line_count)
                 
-                result.append(Return(Expression(expr, self.lines).parse()))
+                result.append(Return(Expression(expr, self.lines).parse(), return_line_count))
             
             else:
                 if self.current_token.token_type == 'end_of_line':
                     if len(buffer) != 0:
-                        result.append(Expr(Expression(buffer, self.lines).parse()))
+                        result.append(Expr(Expression(buffer, self.lines).parse(), self.current_token.line_count))
                         buffer = []
                     
                     else:
