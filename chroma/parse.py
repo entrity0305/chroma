@@ -129,6 +129,7 @@ class Parser:
                     else:
                         if self.next_token().token_type == 'end_of_line': #when value is not initiallized
                             result.append(VarDefine(name, [], var_line_count))
+                            self.advance()
 
                         else:
                             raise InvalidSyntax(f'\'{self.next_token().original}\'', self.lines, self.next_token().line_count)

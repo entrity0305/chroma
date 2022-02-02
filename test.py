@@ -1,19 +1,31 @@
 from chroma.lex import *
 from chroma.parse import *
 from chroma.compile import *
+from chroma.runnable import *
 
 import time
 
 code = '''
-function foo(x)
+var x = 90;
+var y = x * 6 * (1 + 2);
+
+function add2Num(x, y) 
 {
-    while x == 4 {
-        var y = g(
-            1, 2
-        );
-        break;
-    }
+    return x + y;
 }
+
+if x == 1 {
+    var z = 1;
+} elif x == 2 {
+    var z = 2;
+} elif x == 3 {
+    var z = 3;
+} elif x == 4 {
+    var z = 4;
+} else {
+    var z= 5;
+}
+
 '''
 s = time.time()
 lex_test = Lexer(code)
@@ -39,3 +51,8 @@ print('-----------------------------------------------------------------')
 
 
 print(f'took {time.time() - s} seconds')
+
+main = Runnable(code.split('\n'), 'module', 'main', commands=compile_result+[End()])
+main.run()
+
+print(main.variables)

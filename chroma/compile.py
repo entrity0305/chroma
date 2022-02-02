@@ -6,74 +6,92 @@ from .exception import *
 @dataclass
 class Add:
     line_count: int = 0
+    command_type: str = 'add'
 
 @dataclass
 class Sub:
     line_count: int = 0
+    command_type: str = 'sub'
 
 @dataclass
 class Neg:
     line_count: int = 0
+    command_type: str = 'neg'
 
 @dataclass
 class Mul:
     line_count: int = 0
+    command_type: str = 'mul'
 
 @dataclass
 class Div:
     line_count: int = 0
+    command_type: str = 'div'
 
 @dataclass
 class Mod:
     line_count: int = 0
+    command_type: str = 'mod'
 
 @dataclass
 class Pow:
     line_count: int = 0
+    command_type: str = 'pow'
 
 @dataclass
 class Greater:
     line_count: int = 0
+    command_type: str = 'greater'
 
 @dataclass
 class Less:
     line_count: int = 0
+    command_type: str = 'less'
 
 @dataclass
 class Greater_equal:
     line_count: int = 0
+    command_type: str = 'greater_equal'
 
 @dataclass
 class Less_equal:
     line_count: int = 0
+    command_type: str = 'less_equal'
 
 @dataclass
 class Equal:
     line_count: int = 0
+    command_type: str = 'equal'
 
 @dataclass
 class Not_equal:
     line_count: int = 0
+    command_type: str = 'not_equal'
 
 @dataclass
 class Or:
     line_count: int = 0
+    command_type: str = 'or'
 
 @dataclass
 class And:
     line_count: int = 0
+    command_type: str = 'and'
 
 @dataclass
 class Attr:
     line_count: int = 0
+    command_type: str = 'attr'
 
 @dataclass
 class Array:
     line_count: int = 0
+    command_type: str = 'array'
 
 @dataclass
 class Invoke:
     line_count: int = 0
+    command_type: str = 'invoke'
 
 #commands
 @dataclass
@@ -81,48 +99,56 @@ class Pushi:
     value: str
 
     line_count: int = 0
+    command_type: str = 'pushi'
 
 @dataclass
 class Pushf:
     value: str
 
     line_count: int = 0
+    command_type: str = 'pushf'
 
 @dataclass
 class Pushstr:
     value: str
 
     line_count: int = 0
+    command_type: str = 'pushstr'
 
 @dataclass
 class Load:
-    value: str
+    name: str
 
     line_count: int = 0
+    command_type: str = 'load'
 
 @dataclass
 class Var:
     name: str
 
     line_count: int = 0
+    command_type: str = 'var'
 
 @dataclass
 class Assign:
     name: str
 
     line_count: int = 0
+    command_type: str = 'assign'
 
 @dataclass
 class Ifzero:
     pos: int
 
     line_count: int = 0
+    command_type: str = 'ifzero'
 
 @dataclass
 class Goto:
     pos: int
 
     line_count: int = 0
+    command_type: str = 'goto'
 
 #function
 @dataclass
@@ -132,10 +158,17 @@ class FunctionDef:
     body: list
 
     line_count: int = 0
+    command_type: str = 'function'
 
 @dataclass
 class Return:
     line_count: int = 0
+    command_type: str = 'return'
+
+#end
+@dataclass
+class End:
+    command_type: str = 'end'
 
 def compile_expression(expr, lines: list = []):
     if expr.node_type == 'operator':
@@ -199,7 +232,6 @@ def compile_expression(expr, lines: list = []):
         
         elif expr.operator == 'invoke':
             return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Invoke(expr.line_count)]
-
     else:
         if expr.node_type == 'value':
             if expr.value.isdigit():
