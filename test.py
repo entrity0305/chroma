@@ -6,23 +6,14 @@ from chroma.runnable import *
 import time
 
 code = '''
-function f(x) {
-    return x^2;
+var x; #none
+
+function f() {
+    return 1;
 }
 
-function g() {
-    return 5;
-}
-
-function add2(x, y) { return x + y; }
-
-var num = f(2);
-var num2 = g();
-
-num = add2(4, 5);
-
-var x;
-# var y = x + 1;
+var y = f(); #f invoke void
+var z = (); #void
 '''
 s = time.time()
 lex_test = Lexer(code)

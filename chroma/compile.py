@@ -121,6 +121,11 @@ class Pushnone:
     command_type: str = 'pushnone'
 
 @dataclass
+class Pushvoid:
+    line_count: int = 0
+    command_type: str = 'pushvoid'
+
+@dataclass
 class Load:
     name: str
 
@@ -240,6 +245,9 @@ def compile_expression(expr, lines: list = []):
     else:
         if expr.node_type == 'none':
             return [Pushnone(expr.line_count)]
+        
+        elif expr.node_type == 'void':
+            return [Pushvoid(expr.line_count)]
 
         elif expr.node_type == 'value':
             if expr.value.isdigit():

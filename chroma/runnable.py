@@ -5,12 +5,15 @@ from dataclasses import dataclass
 #   1. add function & return
 #   2. add invoke
 #   3. add array
-#   4. add none [v]
-#   5. add typeerror
+#   4. add typeerror
 
 class NONE:
     def __repr__(self):
         return 'none'
+
+class VOID:
+    def __repr__(self):
+        return 'void'
 
 
 class Runnable:
@@ -82,6 +85,9 @@ class Runnable:
             
             elif command.command_type == 'pushnone':
                 self.operand_stack.append(NONE())
+            
+            elif command.command_type == 'pushvoid':
+                self.operand_stack.append(VOID())
 
             elif command.command_type == 'pushi':
                 self.operand_stack.append(int(command.value))

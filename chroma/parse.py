@@ -558,6 +558,12 @@ class NoneNode:
     
     line_count: int = 0
 
+@dataclass
+class VoidNode: #empty ()
+    node_type = 'void'
+
+    line_count: int = 0
+
 class NegativeValueNode:
     def __init__(self, value, line_count):
         self.value = value
@@ -590,7 +596,7 @@ class Expression:
             self.current_token = None
     
     def parse(self):
-        if self.current_token == None:
+        if self.current_token == None: #handle with none
             return NoneNode()
         
         result = self.array_operators()
@@ -702,8 +708,8 @@ class Expression:
                     if result != None:
                         return result
                     
-                    else:
-                        return NoneNode(self.previous_token.line_count)
+                    else: #handle with void; empty ()
+                        return VoidNode(self.previous_token.line_count)
                 
                 elif current_token.value == 'add':
                     self.advance()
