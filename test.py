@@ -12,7 +12,7 @@ function f() {
     return 1;
 }
 
-var y = f(); #f invoke void
+var y = f();
 var z = (); #void
 '''
 s = time.time()
