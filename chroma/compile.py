@@ -116,6 +116,11 @@ class Pushstr:
     command_type: str = 'pushstr'
 
 @dataclass
+class Pushnone:
+    line_count: int = 0
+    command_type: str = 'pushnone'
+
+@dataclass
 class Load:
     name: str
 
@@ -233,7 +238,10 @@ def compile_expression(expr, lines: list = []):
         elif expr.operator == 'invoke':
             return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Invoke(expr.line_count)]
     else:
-        if expr.node_type == 'value':
+        if expr.node_type == 'none':
+            return [Pushnone(expr.line_count)]
+
+        elif expr.node_type == 'value':
             if expr.value.isdigit():
                 return [Pushi(expr.value, expr.line_count)]
             

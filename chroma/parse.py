@@ -128,7 +128,7 @@ class Parser:
 
                     else:
                         if self.next_token().token_type == 'end_of_line': #when value is not initiallized
-                            result.append(VarDefine(name, [], var_line_count))
+                            result.append(VarDefine(name, Expression([None], self.lines).parse(), var_line_count))
                             self.advance()
 
                         else:
@@ -397,15 +397,20 @@ class Parser:
                         param_buffer = []
                         param = []
 
+                        has_param = False #to handle with f()
+
                         while True:
                             if self.current_token.token_type == 'operator' and self.current_token.value == 'r_paren':
                                 if len(param_buffer) == 1:
                                     param.append(param_buffer[0])
                                     param_buffer = []
+
+                                    has_param = True
                                 
                                 else:
                                     if len(param_buffer) == 0:
-                                        raise InvalidSyntax('\',\'', self.lines, self.current_token.line_count)
+                                        if has_param:
+                                            raise InvalidSyntax('\',\'', self.lines, self.current_token.line_count)
                                     else:
                                         raise InvalidSyntax('Missing \',\'', self.lines, self.current_token.line_count)
                                 break
@@ -414,6 +419,8 @@ class Parser:
                                 if len(param_buffer) == 1:
                                     param.append(param_buffer[0])
                                     param_buffer = []
+
+                                    has_param = True
                                 
                                 else:
                                     if len(param_buffer) == 0:
@@ -545,6 +552,12 @@ class StringNode:
 
     line_count: int = 0
 
+@dataclass
+class NoneNode:
+    node_type = 'none'
+    
+    line_count: int = 0
+
 class NegativeValueNode:
     def __init__(self, value, line_count):
         self.value = value
@@ -578,7 +591,7 @@ class Expression:
     
     def parse(self):
         if self.current_token == None:
-            return None
+            return NoneNode()
         
         result = self.array_operators()
 
@@ -686,7 +699,11 @@ class Expression:
 
                     self.advance()
                     
-                    return result
+                    if result != None:
+                        return result
+                    
+                    else:
+                        return NoneNode(self.previous_token.line_count)
                 
                 elif current_token.value == 'add':
                     self.advance()
@@ -720,3 +737,4 @@ class Expression:
 
         else:
             raise InvalidSyntax(f'\'{self.previous_token.original}\'', self.lines, self.previous_token.line_count)
+        

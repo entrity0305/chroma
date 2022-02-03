@@ -1,10 +1,17 @@
 from .exception import *
+from dataclasses import dataclass
 
 #TODO:
 #   1. add function & return
 #   2. add invoke
 #   3. add array
-#   4. add none
+#   4. add none [v]
+#   5. add typeerror
+
+class NONE:
+    def __repr__(self):
+        return 'none'
+
 
 class Runnable:
     def __init__(self, lines, runnable_type: str = '', name: str = '', variables: list = [], commands: list = []):
@@ -73,6 +80,9 @@ class Runnable:
             elif command.command_type == 'function':
                 self.define_variable(command.name, Function(self.lines, command.name, command.param, self.variables, command.body))
             
+            elif command.command_type == 'pushnone':
+                self.operand_stack.append(NONE())
+
             elif command.command_type == 'pushi':
                 self.operand_stack.append(int(command.value))
             

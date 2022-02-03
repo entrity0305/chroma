@@ -6,26 +6,23 @@ from chroma.runnable import *
 import time
 
 code = '''
-var x = 90;
-var y = x * 6 * (1 + 2);
-
-function add2Num(x, y) 
-{
-    return x + y;
+function f(x) {
+    return x^2;
 }
 
-if x == 1 {
-    var z = 1;
-} elif x == 2 {
-    var z = 2;
-} elif x == 3 {
-    var z = 3;
-} elif x == 4 {
-    var z = 4;
-} else {
-    var z= 5;
+function g() {
+    return 5;
 }
 
+function add2(x, y) { return x + y; }
+
+var num = f(2);
+var num2 = g();
+
+num = add2(4, 5);
+
+var x;
+# var y = x + 1;
 '''
 s = time.time()
 lex_test = Lexer(code)
