@@ -6,6 +6,7 @@ from dataclasses import dataclass
 #   2. add invoke
 #   3. add array
 #   4. add typeerror
+#   5. handle with void
 
 class NONE:
     def __repr__(self):

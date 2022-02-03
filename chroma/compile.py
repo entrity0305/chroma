@@ -115,6 +115,7 @@ class Pushstr:
     line_count: int = 0
     command_type: str = 'pushstr'
 
+#none and void
 @dataclass
 class Pushnone:
     line_count: int = 0

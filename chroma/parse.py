@@ -128,7 +128,7 @@ class Parser:
 
                     else:
                         if self.next_token().token_type == 'end_of_line': #when value is not initiallized
-                            result.append(VarDefine(name, Expression([None], self.lines).parse(), var_line_count))
+                            result.append(VarDefine(name, Expression([None], self.lines).parse(), var_line_count)) #value is none
                             self.advance()
 
                         else:
