@@ -376,9 +376,14 @@ class Parser:
             
             elif self.current_token.token_type == 'break':
                 break_line_pos = self.current_token.line_count
-                self.advance()
-                result.append(Break(break_line_pos))
-            
+
+                if self.next_token().token_type == 'end_of_line':
+                    self.advance()
+                    result.append(Break(break_line_pos))
+                
+                else:
+                    raise InvalidSyntax('Missing \';\'', self.lines, self.current_token.line_count)
+
             elif self.current_token.token_type == 'function':
                 function_line_count = self.current_token.line_count
 

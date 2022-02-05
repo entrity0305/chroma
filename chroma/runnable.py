@@ -1,9 +1,9 @@
 from .exception import *
-from dataclasses import dataclass
+from .compile import *
 
 #TODO:
-#   1. add function & return
-#   2. add invoke
+#   1. add function & return [v]
+#   2. add invoke [v]
 #   3. add array
 #   4. add typeerror
 #   5. handle with void
@@ -24,7 +24,7 @@ class Runnable:
         self.variables = variables
         variables.append({}) #local variables
 
-        self.commands = commands
+        self.commands = commands + [End()]
         self.current_pos = 0
 
         self.operand_stack = []
@@ -43,14 +43,16 @@ class Runnable:
         self.variables[-1][var] = value
     
     def get_variable(self, var):
-        for variable_scope in list(reversed(self.variables)):
+        for scope_index in range(len(self.variables) - 1, -1, -1):
+            variable_scope = self.variables[scope_index]
             if var in variable_scope:
                 return variable_scope[var]
         
         return
 
     def set_variable(self, var, value):
-        for variable_scope in list(reversed(self.variables)):
+        for scope_index in range(len(self.variables) - 1, -1, -1):
+            variable_scope = self.variables[scope_index]
             if var in variable_scope:
                 variable_scope[var] = value
                 return value
@@ -191,7 +193,30 @@ class Runnable:
                 val2 = self.pop()
                 self.operand_stack.append(int(val2 and val1))
             
+            elif command.command_type == 'invoke':
+                val1 = self.pop()
+                val2 = self.pop()    
+                
+                new_invoke = val2.invoke(val1) #check if val2 is invokable
+                self.operand_stack.append(new_invoke.run())
+            
+            elif command.command_type == 'return':
+                return self.pop()
+
+            
             self.current_pos += 1
+        
+        return NONE()
+
+def format_args(args):
+    if isinstance(args, VOID):
+        return ()
+    
+    elif isinstance(args, list):
+        return tuple(args)
+    
+    else:
+        return tuple([args])
 
             
 class Function:
@@ -206,3 +231,25 @@ class Function:
     
     def __repr__(self):
         return f'(function {self.name})'
+    
+    def invoke(self, args):
+        #raise error when len(args) != len(self.param)
+        args = format_args(args)
+
+        new_invoke_variable = []
+
+        for variable_scope in self.variables:
+            new_invoke_variable.append(variable_scope)
+        
+        new_invoke = Runnable(self.lines, 'function', self.name, new_invoke_variable, self.commands)
+        
+        local_from_args = {}
+
+        for param_index in range(len(self.param)):
+            local_from_args[self.param[param_index]] = args[param_index]
+        
+        new_invoke.variables[-1] = local_from_args
+
+        return new_invoke
+
+        
