@@ -6,86 +6,51 @@ from chroma.runnable import *
 import time
 
 code = '''
-var const_num = 56;
+var test_array = (1, (2, 3), 4, (5, (7, 8)));
 
-function add2(x) {
-    const_num = 10;
-
-    return x + const_num;
+function add2(x, y) 
+{
+    return x + y;
 }
 
-
-var y = add2(4);
-var z = add2(6);
+var x = add2; #function reference
 
 
-function fib(N) {
-    if N == 0 || N == 1 {
-        return 1;
-    } else {
-        return fib(N - 1) + fib(N - 2);
-    }
-}
+var y = add2(
+    add2(
+        add2(
+            4, 7
+        ),
+        add2(
+            3, 6
+        )
+    ),
+    8
+);
 
-var n1 = fib(1);
-var n2 = fib(2);
-var n3 = fib(3);
-var n4 = fib(4);
-var n5 = fib(5);
-var n6 = fib(6);
-var n7 = fib(7);
-
-var a;
+var val = add2(5, add2(3, 5));
 
 
-function geta() {
-    return a;
-}
 
-function seta(x) {
-    a = x;
+function triangle(a, h) { return 1/2 * a * h; }
 
-    var b;
+var s = triangle(4, triangle(3, 4));
 
-    function getb() {
-        return b;
+var test_str = "Hello, world!";
+
+
+function op(x, y, z) {
+    var const = 3;
+
+    function add2(x, y) {
+        return x + y + const;
     }
 
-    function setb(x) {
-        b = x;
-    }
-
-    setb(72);
-
-    return a + b;
-}
-
-var val = geta();
-var val2 = seta(50);
-
-var val3 = geta();
-
-
-function is_prime(N) {
-    var k = 2;
-
-    while k < N {
-        if N % k == 0 {
-            return 0;
-        }
-
-        k = k + 1;
-    }
-
-    return 1;
+    return add2(x, y) * z;
 }
 
 
-var isp1 = is_prime(50);
-var isp2 = is_prime(17);
-var isp3 = is_prime(20);
-var isp4 = is_prime(41);
-
+var val2 = op(2, 3, 4);
 '''
 s = time.time()
 lex_test = Lexer(code)

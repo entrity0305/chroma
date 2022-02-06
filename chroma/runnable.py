@@ -4,7 +4,7 @@ from .compile import *
 #TODO:
 #   1. add function & return [v]
 #   2. add invoke [v]
-#   3. add array
+#   3. add array [v]
 #   4. add typeerror
 #   5. handle with void
 
@@ -192,6 +192,23 @@ class Runnable:
                 val1 = self.pop()
                 val2 = self.pop()
                 self.operand_stack.append(int(val2 and val1))
+            
+            elif command.command_type == 'array':
+                val1 = self.pop()
+                val2 = self.pop()
+
+                if isinstance(val2, list):
+                    if isinstance(val1, list):
+                        self.operand_stack.append(val2 + val1)
+
+                    else:
+                        self.operand_stack.append(val2 + [val1])
+                else:
+                    if isinstance(val1, list):
+                        self.operand_stack.append([val2] + val1)
+                    
+                    else:
+                        self.operand_stack.append([val2] + [val1])
             
             elif command.command_type == 'invoke':
                 val1 = self.pop()
