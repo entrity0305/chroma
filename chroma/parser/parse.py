@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from .lex import *
-from .exception import *
+from ..lexer.lex import *
+from ..utils.exception import *
 
 
 @dataclass

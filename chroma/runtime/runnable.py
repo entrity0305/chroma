@@ -1,5 +1,7 @@
-from .exception import *
-from .compile import *
+from ..utils.exception import *
+from ..compiler.compile import *
+from .function import *
+from ..builtins.types import *
 
 #TODO:
 #   1. add function & return [v]
@@ -7,14 +9,6 @@ from .compile import *
 #   3. add array [v]
 #   4. add typeerror
 #   5. handle with void
-
-class NONE:
-    def __repr__(self):
-        return 'none'
-
-class VOID:
-    def __repr__(self):
-        return 'void'
 
 
 class Runnable:
@@ -214,7 +208,7 @@ class Runnable:
                 val1 = self.pop()
                 val2 = self.pop()    
                 
-                new_invoke = val2.invoke(val1) #check if val2 is invokable
+                new_invoke = invoke(val2, val1) #check if val2 is invokable
                 self.operand_stack.append(new_invoke.run())
             
             elif command.command_type == 'return':
@@ -225,49 +219,33 @@ class Runnable:
         
         return NONE()
 
-            
-class Function:
-    def __init__(self, lines, name: str = '', param: list = [], variables: list = [], commands: list = []):
-        self.name = name
-        self.param = param
 
-        self.variables = variables
-        self.commands = commands
-
-        self.lines = lines
+def format_args(args):
+    if isinstance(args, VOID):
+        return ()
     
-    def __repr__(self):
-        return f'(function {self.name})'
+    elif isinstance(args, list):
+        return tuple(args)
     
-    @staticmethod
-    def format_args(args):
-        if isinstance(args, VOID):
-            return ()
-        
-        elif isinstance(args, list):
-            return tuple(args)
-        
-        else:
-            return tuple([args])
+    else:
+        return tuple([args])
+
+def invoke(func, args):
+    #check args and param
+    args = format_args(args)
+
+    new_invoke_variable = []
+
+    for variable_scope in func.variables:
+        new_invoke_variable.append(variable_scope)
     
-    def invoke(self, args):
-        #raise error when len(args) != len(self.param)
-        args = self.format_args(args)
+    new_invoke = Runnable(func.lines, 'function', func.name, new_invoke_variable, func.commands)
+    
+    local_from_args = {}
 
-        new_invoke_variable = []
+    for param_index in range(len(func.param)):
+        local_from_args[func.param[param_index]] = args[param_index]
+    
+    new_invoke.variables[-1] = local_from_args
 
-        for variable_scope in self.variables:
-            new_invoke_variable.append(variable_scope)
-        
-        new_invoke = Runnable(self.lines, 'function', self.name, new_invoke_variable, self.commands)
-        
-        local_from_args = {}
-
-        for param_index in range(len(self.param)):
-            local_from_args[self.param[param_index]] = args[param_index]
-        
-        new_invoke.variables[-1] = local_from_args
-
-        return new_invoke
-
-        
+    return new_invoke

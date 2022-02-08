@@ -1,7 +1,7 @@
-from chroma.lex import *
-from chroma.parse import *
-from chroma.compile import *
-from chroma.runnable import *
+from chroma.lexer.lex import *
+from chroma.parser.parse import *
+from chroma.compiler.compile import *
+from chroma.runtime.runnable import *
 
 import time
 
