@@ -225,16 +225,6 @@ class Runnable:
         
         return NONE()
 
-def format_args(args):
-    if isinstance(args, VOID):
-        return ()
-    
-    elif isinstance(args, list):
-        return tuple(args)
-    
-    else:
-        return tuple([args])
-
             
 class Function:
     def __init__(self, lines, name: str = '', param: list = [], variables: list = [], commands: list = []):
@@ -249,9 +239,20 @@ class Function:
     def __repr__(self):
         return f'(function {self.name})'
     
+    @staticmethod
+    def format_args(args):
+        if isinstance(args, VOID):
+            return ()
+        
+        elif isinstance(args, list):
+            return tuple(args)
+        
+        else:
+            return tuple([args])
+    
     def invoke(self, args):
         #raise error when len(args) != len(self.param)
-        args = format_args(args)
+        args = self.format_args(args)
 
         new_invoke_variable = []
 

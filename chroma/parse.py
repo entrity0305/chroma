@@ -87,7 +87,7 @@ class Parser:
             return self.tokens[self.current_pos + 1]
         
         else:
-            return Token('none')
+            return Token('none', line_count=self.tokens[self.current_pos].line_count)
     
     def parse(self):
         result = []
@@ -136,7 +136,7 @@ class Parser:
 
                 else:
                     raise InvalidSyntax(f'\'{name.original}\'', self.lines, name.line_count)
-            
+                    
             elif self.current_token.token_type == 'assign':
                 assign_line_count = self.current_token.line_count
 
