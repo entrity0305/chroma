@@ -1,0 +1,26 @@
+function fib(N) { #this function returns the 'N'th number of the fibonacci sequence 
+    if N == 0 || N == 1 {
+        return 0;
+    } else {
+        return fib(N - 1) + fib(N - 2);
+    }
+}
+
+var val = fib(1);
+
+var pi = 3.141592; #this is a constant
+
+function areas(type) {
+    function circle(r) {
+        return pi*r^2;
+    } 
+    if type == "circle" {
+        return circle(4);
+    } else {
+        return 0;
+    }
+}
+
+
+var s1 = areas("circle");
+var s2 = areas("triangle");
