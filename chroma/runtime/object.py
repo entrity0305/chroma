@@ -11,7 +11,7 @@ from ..builtins.types import *
 #   5. handle with void
 
 
-class Runnable:
+class Object:
     def __init__(self, lines, runnable_type: str = '', name: str = '', variables: list = [], commands: list = []):
         self.name = name
         self.runnable_type = runnable_type
@@ -239,7 +239,7 @@ def invoke(func, args):
     for variable_scope in func.variables:
         new_invoke_variable.append(variable_scope)
     
-    new_invoke = Runnable(func.lines, 'function', func.name, new_invoke_variable, func.commands)
+    new_invoke = Object(func.lines, 'function', func.name, new_invoke_variable, func.commands)
     
     local_from_args = {}
 

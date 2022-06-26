@@ -1,7 +1,7 @@
 from chroma.lexer.lex import *
 from chroma.parser.parse import *
 from chroma.compiler.compile import *
-from chroma.runtime.runnable import *
+from chroma.runtime.object import *
 
 import time
 
@@ -21,7 +21,7 @@ compile_result = compile_statements(parse_result, code.split('\n'))
 
 
 
-main = Runnable(code.split('\n'), 'module', 'main', commands=compile_result)
+main = Object(code.split('\n'), 'module', 'main', commands=compile_result)
 main.run()
 
 print(main.variables)
