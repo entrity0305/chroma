@@ -12,9 +12,9 @@ from ..builtins.types import *
 
 
 class Object:
-    def __init__(self, lines, runnable_type: str = '', name: str = '', variables: list = [], commands: list = []):
+    def __init__(self, lines, object_type: str = '', name: str = '', variables: list = [], commands: list = []):
         self.name = name
-        self.runnable_type = runnable_type
+        self.object_type = object_type
         self.variables = variables
         variables.append({}) #local variables
 
@@ -218,7 +218,6 @@ class Object:
             self.current_pos += 1
         
         return NONE()
-
 
 def format_args(args):
     if isinstance(args, VOID):
