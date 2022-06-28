@@ -2,6 +2,7 @@ from ..utils.exception import *
 from ..compiler.compile import *
 from .function import *
 from ..builtins.types import *
+from ..builtins.functions import *
 
 #TODO:
 #   1. add function & return [v]
@@ -233,18 +234,33 @@ def invoke(func, args):
     #check args and param
     args = format_args(args)
 
-    new_invoke_variable = []
+    if isinstance(func, BuiltinFunction):
+        if func.name == 'println':
+            new_invoke = Println()
+        elif func.name == 'input':
+            new_invoke = Input()
+        elif func.name == 'integer':
+            new_invoke = Integer()
+        elif func.name == 'float':
+            new_invoke = Float()
+        elif func.name == 'string':
+            new_invoke = String()
+            
+        new_invoke.args = args
+    
+    else:
+        new_invoke_variable = []
 
-    for variable_scope in func.variables:
-        new_invoke_variable.append(variable_scope)
-    
-    new_invoke = Object(func.lines, 'function', func.name, new_invoke_variable, func.commands)
-    
-    local_from_args = {}
+        for variable_scope in func.variables:
+            new_invoke_variable.append(variable_scope)
+        
+        new_invoke = Object(func.lines, 'function', func.name, new_invoke_variable, func.commands)
+        
+        local_from_args = {}
 
-    for param_index in range(len(func.param)):
-        local_from_args[func.param[param_index]] = args[param_index]
-    
-    new_invoke.variables[-1] = local_from_args
+        for param_index in range(len(func.param)):
+            local_from_args[func.param[param_index]] = args[param_index]
+        
+        new_invoke.variables[-1] = local_from_args
 
     return new_invoke

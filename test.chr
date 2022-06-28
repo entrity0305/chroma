@@ -1,19 +1,30 @@
-#closure test
+# chroma builtin test
 
-function addSomeNumTo(x) {
-    function add(y) {
-        return x + y;
+var x = 34.5;
+println(integer(x));
+println(float(x));
+
+var y = string(x);
+
+println("y = " + y);
+
+var name = input("what is your name?: ");
+println("hi", name);
+
+
+function factorial(N) {
+    var k = 1;
+    var result = 1;
+
+    while k <= N 
+    {
+        result = result * k;
+        k = k + 1;
     }
 
-    return add;
+    return result;
 }
 
-function constant4() {
-    return 4;
-}
+var N = input("number: ");
 
-var f1 = addSomeNumTo(2);
-var f2 = addSomeNumTo(5);
-
-var x = f1(constant4());
-var y = f2(4);
+println(N + "! =", factorial(integer(N)));

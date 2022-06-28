@@ -4,6 +4,7 @@ from pychroma.lexer.lex import *
 from pychroma.parser.parse import *
 from pychroma.compiler.compile import *
 from pychroma.runtime.object import *
+from pychroma.builtins.functions import *
 
 argument_parser = argparse.ArgumentParser(description='chroma standard runtime')
 argument_parser.add_argument('file')
@@ -27,8 +28,15 @@ try:
 
 
     main = Object(code.split('\n'), 'module', 'main', commands=compile_result)
+    main.variables[-1] = {
+        'println': BuiltinFunction('println'),
+        'input': BuiltinFunction('input'),
+        'integer': BuiltinFunction('integer'),
+        'float': BuiltinFunction('float'),
+        'string': BuiltinFunction('string')
+    } # set builtins
     main.run()
-    print(main.variables)
+    #print(main.variables)
 
 except Exception as e:
     print(e)
