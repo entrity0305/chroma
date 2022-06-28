@@ -194,55 +194,55 @@ def compile_expression(expr, lines: list = []):
                 if expr.right.value.isdigit():
                     raise InvalidSyntax(f'\'{expr.right.value}\'', lines, expr.right.line_count)
 
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Attr(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Attr(expr.line_count)]
 
         elif expr.operator == 'add':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Add(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Add(expr.line_count)]
 
         elif expr.operator == 'sub':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Sub(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Sub(expr.line_count)]
 
         elif expr.operator == 'mul':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Mul(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Mul(expr.line_count)]
         
         elif expr.operator == 'div':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Div(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Div(expr.line_count)]
         
         elif expr.operator == 'mod':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Mod(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Mod(expr.line_count)]
         
         elif expr.operator == 'pow':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Pow(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Pow(expr.line_count)]
         
         elif expr.operator == 'greater':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Greater(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Greater(expr.line_count)]
         
         elif expr.operator == 'less':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Less(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Less(expr.line_count)]
         
         elif expr.operator == 'greater_equal':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Greater_equal(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Greater_equal(expr.line_count)]
         
         elif expr.operator == 'less_equal':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Less_equal(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Less_equal(expr.line_count)]
 
         elif expr.operator == 'equal':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Equal(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Equal(expr.line_count)]
         
         elif expr.operator == 'not_equal':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Not_equal(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Not_equal(expr.line_count)]
 
         elif expr.operator == 'or':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Or(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Or(expr.line_count)]
         
         elif expr.operator == 'and':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [And(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [And(expr.line_count)]
 
         elif expr.operator == 'array':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Array(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Array(expr.line_count)]
         
         elif expr.operator == 'invoke':
-            return compile_expression(expr.left, expr.left.line_count) + compile_expression(expr.right, expr.right.line_count) + [Invoke(expr.line_count)]
+            return compile_expression(expr.left, lines) + compile_expression(expr.right, lines) + [Invoke(expr.line_count)]
     else:
         if expr.node_type == 'none':
             return [Pushnone(expr.line_count)]
