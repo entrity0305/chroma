@@ -36,7 +36,6 @@ try:
         'string': BuiltinFunction('string')
     } # set builtins
     main.run()
-    #print(main.variables)
 
 except Exception as e:
     print(e)
