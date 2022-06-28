@@ -1,0 +1,6 @@
+*.pyc
+*.exe
+*.spec
+*.chr
+/build
+/dist
